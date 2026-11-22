@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Operations & Simulation — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Ethers.js v6 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+</head>
+<body id="admin-console-view" data-required-role="ADMIN">
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>ADMIN OPERATIONS CONSOLE:</strong> Real-time operations, weekly policy underwriting, claims settlement, and parametric simulation.</span>
+      </div>
+      <div class="badge badge-demo">ADMIN ACCESS</div>
+    </div>
+
+    <!-- Apple-Inspired Minimal Admin Navigation Bar -->
+    <header class="navbar">
+      <a href="admin.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle">Operations & Simulation Console</span>
+        </div>
+      </a>
+
+      <!-- Dedicated Minimal Admin Navigation (7 Primary Items) -->
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item active"><a href="admin.html#overview"><span class="nav-icon">📊</span> Overview</a></li>
+          <li class="nav-item"><a href="admin.html#riders"><span class="nav-icon">🛵</span> Riders</a></li>
+          <li class="nav-item"><a href="admin.html#policies"><span class="nav-icon">🛡️</span> Policies</a></li>
+          <li class="nav-item"><a href="admin.html#claims"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item"><a href="admin.html#weather"><span class="nav-icon">⚡</span> Weather Events</a></li>
+          <li class="nav-item"><a href="blockchain.html"><span class="nav-icon">🔗</span> Audit & Blockchain ↗</a></li>
+          <li class="nav-item"><a href="settings.html"><span class="nav-icon">⚙️</span> Settings ↗</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Active Rider View" style="display: none;"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Theme">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Operations & Parametric Underwriting Console</h1>
+          <div class="page-description">Oversee registered riders, manage weekly micro-insurance policies, evaluate claims, and test parametric weather triggers.</div>
+        </div>
+        <div style="display: flex; gap: 0.65rem; align-items: center;">
+          <a href="blockchain.html" class="btn btn-secondary btn-sm">Blockchain Explorer ↗</a>
+          <button id="btn-admin-reset-data" class="btn btn-outline btn-sm" style="color: var(--color-danger); border-color: rgba(239, 68, 68, 0.4);">
+            Reset Demo Data ↺
+          </button>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           SECTION 1: OVERVIEW & KEY PERFORMANCE METRICS
+           ==================================================================== -->
+      <section id="overview" class="admin-section">
+        <div class="grid-stats">
+          <div class="card stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Active Registered Riders</span>
+              <span class="stat-icon">🛵</span>
+            </div>
+            <div class="stat-value" id="admin-riders-count">3</div>
+            <div class="stat-subtext">Across Mumbai Postal Delivery Hubs</div>
+          </div>
+
+          <div class="card stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Weekly Policies Sold</span>
+              <span class="stat-icon">🛡️</span>
+            </div>
+            <div class="stat-value" id="admin-weekly-policies-count">3</div>
+            <div class="stat-subtext positive" id="admin-weekly-policies-sub">7-Day Coverage Underwritten</div>
+          </div>
+
+          <div class="card stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Weekly Premium Revenue</span>
+              <span class="stat-icon">💰</span>
+            </div>
+            <div class="stat-value" style="color: #38bdf8;" id="admin-weekly-revenue-sum">₹207</div>
+            <div class="stat-subtext positive" id="admin-avg-premium-sub">Avg ₹69.0 / policy</div>
+          </div>
+
+          <div class="card stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Claims Processed & Settled</span>
+              <span class="stat-icon">📋</span>
+            </div>
+            <div class="stat-value" id="admin-claims-count">1</div>
+            <div class="stat-subtext positive">Automated Parametric Decisions</div>
+          </div>
+
+          <div class="card stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Total Settled Payouts</span>
+              <span class="stat-icon">💳</span>
+            </div>
+            <div class="stat-value" style="color: var(--color-success);" id="admin-payouts-sum">₹750</div>
+            <div class="stat-subtext positive">100% Instant Internal Ledger Credit</div>
+          </div>
+
+          <div class="card stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Anti-Fraud Engine Alerts</span>
+              <span class="stat-icon">🚨</span>
+            </div>
+            <div class="stat-value" style="color: var(--color-warning);" id="admin-fraud-count">0</div>
+            <div class="stat-subtext">Active Heuristic & GPS Verification</div>
+          </div>
+        </div>
+
+        <!-- Weekly Revenue Analytics & Plan Configuration -->
+        <div class="card" style="margin-bottom: 1.75rem;">
+          <div class="card-header">
+            <div class="card-title">
+              <span>📈</span>
+              <span>Weekly Insurance Revenue & Plan Sales Breakdown</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <span class="badge badge-success">ACTUAL PAID POLICIES ONLY</span>
+              <span class="badge badge-sim">MVP: ₹49 – ₹99/wk</span>
+            </div>
+          </div>
+
+          <!-- Revenue Grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-bottom: 1.35rem;">
+            <!-- Basic Plan -->
+            <div style="background: var(--color-card-hover); padding: 1rem; border-radius: var(--border-radius-md); border-left: 4px solid #38bdf8; border-top: 1px solid var(--color-card-border); border-right: 1px solid var(--color-card-border); border-bottom: 1px solid var(--color-card-border);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                <span>Basic Weekly (₹49/wk)</span>
+                <span>₹49</span>
+              </div>
+              <div style="font-size: 1.35rem; font-weight: 700; color: #fff; margin: 0.35rem 0;" id="admin-sales-basic-count">0 policies</div>
+              <div style="font-size: 0.8rem; color: #38bdf8;" id="admin-sales-basic-rev">Revenue: ₹0</div>
+            </div>
+
+            <!-- Standard Plan -->
+            <div style="background: var(--color-card-hover); padding: 1rem; border-radius: var(--border-radius-md); border-left: 4px solid #30d158; border-top: 1px solid var(--color-card-border); border-right: 1px solid var(--color-card-border); border-bottom: 1px solid var(--color-card-border);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                <span>Standard Weekly (₹69/wk)</span>
+                <span>₹69</span>
+              </div>
+              <div style="font-size: 1.35rem; font-weight: 700; color: #fff; margin: 0.35rem 0;" id="admin-sales-standard-count">0 policies</div>
+              <div style="font-size: 0.8rem; color: #30d158;" id="admin-sales-standard-rev">Revenue: ₹0</div>
+            </div>
+
+            <!-- Premium Plan -->
+            <div style="background: var(--color-card-hover); padding: 1rem; border-radius: var(--border-radius-md); border-left: 4px solid #ff9f0a; border-top: 1px solid var(--color-card-border); border-right: 1px solid var(--color-card-border); border-bottom: 1px solid var(--color-card-border);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                <span>Premium Weekly (₹99/wk)</span>
+                <span>₹99</span>
+              </div>
+              <div style="font-size: 1.35rem; font-weight: 700; color: #fff; margin: 0.35rem 0;" id="admin-sales-premium-count">0 policies</div>
+              <div style="font-size: 0.8rem; color: #ff9f0a;" id="admin-sales-premium-rev">Revenue: ₹0</div>
+            </div>
+
+            <!-- Policy Retention -->
+            <div style="background: var(--color-card-hover); padding: 1rem; border-radius: var(--border-radius-md); border-left: 4px solid #bf5af2; border-top: 1px solid var(--color-card-border); border-right: 1px solid var(--color-card-border); border-bottom: 1px solid var(--color-card-border);">
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Policy Retention & Expiry</div>
+              <div style="font-size: 1.35rem; font-weight: 700; color: #bf5af2; margin: 0.35rem 0;" id="admin-renewal-rate-val">0% Renewed</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);" id="admin-expired-count-val">0 Expired Policies</div>
+            </div>
+          </div>
+
+          <!-- Plan Configuration Form -->
+          <div style="border-top: 1px solid var(--color-card-border); padding-top: 1.15rem;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+              <span>⚙️</span>
+              <span>Configure Weekly Plan Rates (₹49 – ₹99 MVP Bounds)</span>
+            </h4>
+
+            <form id="admin-plan-config-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) 160px; gap: 0.85rem; align-items: flex-end;">
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Select Plan Tier</label>
+                <select id="config-plan-id" class="select-control" style="width: 100%; min-height: 40px;">
+                  <option value="plan-basic">Basic Weekly Shield (Current: ₹49)</option>
+                  <option value="plan-standard" selected>Standard Weekly Shield (Current: ₹69)</option>
+                  <option value="plan-premium">Premium Weekly Shield (Current: ₹99)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Weekly Premium (₹49 - ₹99)</label>
+                <input type="number" id="config-weekly-premium" class="select-control" style="width: 100%; min-height: 40px;" min="49" max="99" value="69" required>
+              </div>
+
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">7-Day Total Coverage Limit (₹)</label>
+                <input type="number" id="config-coverage-limit" class="select-control" style="width: 100%; min-height: 40px;" min="1000" max="15000" step="500" value="5000" required>
+              </div>
+
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Duration</label>
+                <input type="text" class="select-control" style="width: 100%; min-height: 40px; background: rgba(255,255,255,0.05); color: #94a3b8;" value="7 Days (Fixed Weekly)" disabled>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="min-height: 40px;">
+                Update Plan
+              </button>
+            </form>
+            <div id="plan-config-feedback" style="font-size: 0.8rem; margin-top: 0.5rem; display: none;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 2: REGISTERED RIDERS ROSTER
+           ==================================================================== -->
+      <section id="riders" class="admin-section">
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">
+            <span>🛵</span>
+            <span>Registered Delivery Riders</span>
+          </h2>
+          <div class="search-filter-box">
+            <span>🔍</span>
+            <input type="text" id="rider-search-input" placeholder="Search by name, PIN, or partner ID...">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Rider Name & Email</th>
+                  <th>Partner ID</th>
+                  <th>Platform</th>
+                  <th>Operational Hub</th>
+                  <th>Vehicle</th>
+                  <th>Daily Avg Income</th>
+                  <th>Wallet Balance</th>
+                </tr>
+              </thead>
+              <tbody id="admin-riders-tbody">
+                <!-- Populated dynamically by admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 3: WEEKLY POLICIES UNDERWRITING LEDGER
+           ==================================================================== -->
+      <section id="policies" class="admin-section">
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">
+            <span>🛡️</span>
+            <span>Recorded 7-Day Weekly Policies Ledger</span>
+          </h2>
+          <span class="badge badge-sim">STRICT REVENUE AUDIT</span>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Policy Number</th>
+                  <th>Rider</th>
+                  <th>Plan Tier</th>
+                  <th>Weekly Premium</th>
+                  <th>Coverage Limit</th>
+                  <th>Duration</th>
+                  <th>Expiry Date</th>
+                  <th>Payment Status</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="admin-policies-tbody">
+                <!-- Populated dynamically by admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 4: CLAIMS SETTLEMENT & FRAUD QUEUE
+           ==================================================================== -->
+      <section id="claims" class="admin-section">
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">
+            <span>📋</span>
+            <span>Claims Settlement & Adjudication Queue</span>
+          </h2>
+          <a href="blockchain.html" class="btn btn-outline btn-sm">Full Blockchain Audit Ledger ↗</a>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="table-responsive">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Claim ID</th>
+                  <th>PIN</th>
+                  <th>Event Type</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Blockchain Verification</th>
+                </tr>
+              </thead>
+              <tbody id="admin-claims-tbody">
+                <!-- Populated dynamically by admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Fraud Alerts Table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🚨</span>
+              <span>Anti-Fraud & Heuristic Risk Queue</span>
+            </div>
+            <span class="badge badge-sim">6 RULES ACTIVE</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Severity</th>
+                  <th>Rule Name</th>
+                  <th>Description</th>
+                  <th>Risk Score</th>
+                  <th>Detected At</th>
+                </tr>
+              </thead>
+              <tbody id="admin-fraud-tbody">
+                <!-- Populated dynamically by admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           SECTION 5: PARAMETRIC WEATHER SIMULATION & HAZARD LOGGING
+           ==================================================================== -->
+      <section id="weather" class="admin-section">
+        <div class="admin-section-header">
+          <h2 class="admin-section-title">
+            <span>⚡</span>
+            <span>Parametric Weather Triggers & Hazard Simulation</span>
+          </h2>
+          <span class="badge badge-demo">10-STEP PIPELINE ENGINE</span>
+        </div>
+
+        <!-- Preset Simulation Cards -->
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🌧️</span>
+              <span>Quick Anomaly Presets</span>
+            </div>
+            <span class="badge badge-sim">One-Click Demonstration</span>
+          </div>
+
+          <div class="grid-cols-2" style="margin-bottom: 1.25rem;">
+            <!-- Preset 1: Torrential Cloudburst -->
+            <div style="background: var(--color-card-hover); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+                  <strong style="color: #38bdf8; font-size: 1rem;">🌧️ Mumbai Torrential Cloudburst</strong>
+                  <span class="badge badge-danger">Extreme Rain</span>
+                </div>
+                <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 1rem;">
+                  Simulates 62.5 mm/hr rainfall in <strong>PIN 400053 (Andheri West)</strong> for 90 mins. Exceeds the 35 mm/hr threshold and triggers immediate payout.
+                </p>
+              </div>
+              <button class="btn btn-primary btn-sm btn-sim-preset" data-event-type="CLOUDBURST">
+                Fire Cloudburst Simulation →
+              </button>
+            </div>
+
+            <!-- Preset 2: Flash Flood -->
+            <div style="background: var(--color-card-hover); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+                  <strong style="color: #ff9f0a; font-size: 1rem;">🌊 Bandra Flash Flood & Inundation</strong>
+                  <span class="badge badge-danger">Severe Flood</span>
+                </div>
+                <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 1rem;">
+                  Simulates 78 mm/hr deluge in <strong>PIN 400050 (Bandra West)</strong>. Triggers high-tier flood protection.
+                </p>
+              </div>
+              <button class="btn btn-primary btn-sm btn-sim-preset" data-event-type="FLASH_FLOOD">
+                Fire Flash Flood Simulation →
+              </button>
+            </div>
+
+            <!-- Preset 3: Heatwave -->
+            <div style="background: var(--color-card-hover); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+                  <strong style="color: #ff9f0a; font-size: 1rem;">☀️ Summer Red Alert Heatwave</strong>
+                  <span class="badge badge-warning">Extreme Heat</span>
+                </div>
+                <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 1rem;">
+                  Simulates 43.5°C ambient heat in <strong>PIN 400069</strong>. Exceeds 42°C heatwave safety threshold.
+                </p>
+              </div>
+              <button class="btn btn-primary btn-sm btn-sim-preset" data-event-type="HEATWAVE">
+                Fire Heatwave Simulation →
+              </button>
+            </div>
+
+            <!-- Preset 4: Coldwave -->
+            <div style="background: var(--color-card-hover); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+                  <strong style="color: #38bdf8; font-size: 1rem;">❄️ Severe Winter Coldwave</strong>
+                  <span class="badge badge-info">Extreme Cold</span>
+                </div>
+                <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 1rem;">
+                  Simulates sharp temperature plunge to 4.5°C in <strong>PIN 400053</strong>. Triggers coldwave disruption benefit.
+                </p>
+              </div>
+              <button class="btn btn-primary btn-sm btn-sim-preset" data-event-type="COLDWAVE">
+                Fire Coldwave Simulation →
+              </button>
+            </div>
+          </div>
+
+          <!-- Custom Simulation Form -->
+          <div style="border-top: 1px solid var(--color-card-border); padding-top: 1.15rem;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.85rem; color: var(--text-main);">Custom Synthetic Trigger Builder</h4>
+            <form id="admin-custom-weather-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) 140px; gap: 0.85rem; align-items: flex-end;">
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Target PIN Code</label>
+                <input type="text" id="sim-pincode" class="select-control" style="width: 100%; min-height: 40px;" value="400053" required>
+              </div>
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Event Type</label>
+                <select id="sim-type" class="select-control" style="width: 100%; min-height: 40px;">
+                  <option value="HEAVY_RAIN">Heavy Rainfall</option>
+                  <option value="EXTREME_RAIN">Extreme Deluge</option>
+                  <option value="EXTREME_HEAT">Extreme Heatwave</option>
+                  <option value="EXTREME_COLD">Extreme Coldwave</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Rainfall (mm/hr)</label>
+                <input type="number" id="sim-rainfall" class="select-control" style="width: 100%; min-height: 40px;" value="55" step="0.5">
+              </div>
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Temperature (°C)</label>
+                <input type="number" id="sim-temp" class="select-control" style="width: 100%; min-height: 40px;" value="25" step="0.1">
+              </div>
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Duration (Mins)</label>
+                <input type="number" id="sim-duration" class="select-control" style="width: 100%; min-height: 40px;" value="90">
+              </div>
+              <button type="submit" class="btn btn-primary" style="height: 40px;">Run Trigger</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Waterlogging & Road Hazards Management -->
+        <div class="grid-cols-2">
+          <!-- Log Hazard Form -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span>⚠️</span>
+                <span>Log Waterlogging Hazard</span>
+              </div>
+              <span class="badge badge-demo">HAZARD INGESTION</span>
+            </div>
+
+            <form id="admin-add-waterlogging-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Road / Underpass Name</label>
+                <input type="text" id="wl-road-name" class="select-control" style="width: 100%; min-height: 40px;" placeholder="e.g., Kurla Station Underpass" required>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
+                <div>
+                  <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">PIN Code</label>
+                  <input type="text" id="wl-pincode" class="select-control" style="width: 100%; min-height: 40px;" value="400053" required>
+                </div>
+                <div>
+                  <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Water Depth (cm)</label>
+                  <input type="number" id="wl-depth-cm" class="select-control" style="width: 100%; min-height: 40px;" value="35" required>
+                </div>
+              </div>
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Landmark / Intersection</label>
+                <input type="text" id="wl-landmark" class="select-control" style="width: 100%; min-height: 40px;" placeholder="Near Railway Crossing">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" style="align-self: flex-start; margin-top: 0.35rem; min-height: 38px;">
+                Add Waterlogging Report
+              </button>
+            </form>
+          </div>
+
+          <!-- Active Hazards Table -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span>🌊</span>
+                <span>Active Waterlogged Spots</span>
+              </div>
+              <a href="routes.html" class="btn btn-outline btn-sm">Map View ↗</a>
+            </div>
+
+            <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Location</th>
+                    <th>PIN</th>
+                    <th>Depth</th>
+                    <th>Severity</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-waterlogging-tbody">
+                  <!-- Populated by admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 10-Step Automated Pipeline Modal -->
+    <div class="modal-overlay" id="pipeline-modal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="document.getElementById('pipeline-modal').classList.remove('active')">&times;</button>
+        <h3 id="pipeline-modal-title" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text-main);">
+          Executing 10-Step Parametric Pipeline
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.15rem; line-height: 1.45;">
+          End-to-end automated workflow from weather detection to Sepolia blockchain settlement.
+        </p>
+
+        <div id="pipeline-steps-container" style="max-height: 380px; overflow-y: auto; margin-bottom: 1.15rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <!-- Steps injected dynamically -->
+        </div>
+
+        <div id="pipeline-modal-footer" style="padding-top: 0.85rem; border-top: 1px solid var(--color-card-border); text-align: center;">
+          <span style="color: var(--color-accent-cyan); font-weight: 600;">Pipeline running...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. All insurance policies, premium collections, coverage amounts, weather anomalies, and payouts are illustrative simulation data.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype • Ethereum Sepolia Web3 Simulation</div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/contracts-config.js"></script>
+  <script src="js/abis.js"></script>
+  <script src="js/policy-hasher.js"></script>
+  <script src="js/web3.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/waterlogging.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/fraud.js"></script>
+  <script src="js/claims.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

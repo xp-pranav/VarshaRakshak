@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claims & Payouts — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Ethers.js v6 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>PARAMETRIC CLAIMS & PAYOUTS:</strong> Automated claim evaluations triggered by verified weather anomalies and recorded on Ethereum Sepolia.</span>
+      </div>
+      <div class="badge badge-demo">DEMO SETTLEMENT</div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="index.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle" data-i18n="tagline">Smart Insurance for Every Delivery Rider</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item"><a href="rider.html"><span class="nav-icon">🏠</span> Home</a></li>
+          <li class="nav-item"><a href="policies.html"><span class="nav-icon">🛡️</span> My Policy</a></li>
+          <li class="nav-item active"><a href="claims.html"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item"><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Active Rider"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Theme">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" data-i18n="claim_history">Claims History & Automatic Payouts</h1>
+          <div class="page-description">
+            Complete audit trail of all parametric claims, trigger evaluations, and simulated wallet settlements.
+          </div>
+        </div>
+
+        <div>
+          <a href="admin.html" class="btn btn-primary btn-sm">Simulate New Weather Event ⚡</a>
+        </div>
+      </div>
+
+      <!-- Lifecycle Stage Bar -->
+      <div class="card" style="margin-bottom: 1.75rem; background: var(--color-card-hover);">
+        <div style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.85rem;">
+          Parametric Claims State Machine
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; font-size: 0.85rem;">
+          <div style="display: flex; align-items: center; gap: 0.45rem;">
+            <span class="status-dot active"></span> <strong>1. Trigger Detected</strong>
+          </div>
+          <span style="color: var(--text-dim);">➔</span>
+          <div style="display: flex; align-items: center; gap: 0.45rem;">
+            <span class="status-dot active"></span> <strong>2. Policy Matched</strong>
+          </div>
+          <span style="color: var(--text-dim);">➔</span>
+          <div style="display: flex; align-items: center; gap: 0.45rem;">
+            <span class="status-dot active"></span> <strong>3. Anti-Fraud Passed</strong>
+          </div>
+          <span style="color: var(--text-dim);">➔</span>
+          <div style="display: flex; align-items: center; gap: 0.45rem;">
+            <span class="status-dot active"></span> <strong>4. On-Chain Authorized</strong>
+          </div>
+          <span style="color: var(--text-dim);">➔</span>
+          <div style="display: flex; align-items: center; gap: 0.45rem;">
+            <span class="status-dot active"></span> <strong>5. Wallet Paid</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Claims Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📋</span>
+            <span>All Registered Claims</span>
+          </div>
+          <span class="badge badge-live">IMMUTABLE CLAIM AUDIT</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th data-i18n="claim_id">Claim ID</th>
+                <th>Policy Number</th>
+                <th data-i18n="event_type">Event Type</th>
+                <th>Trigger Metric</th>
+                <th>Requested</th>
+                <th>Approved</th>
+                <th data-i18n="status">Status</th>
+                <th data-i18n="tx_hash">Sepolia Tx</th>
+                <th>Date</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="claims-page-tbody">
+              <!-- Populated by script -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Claim Detail Modal -->
+    <div class="modal-overlay" id="claim-detail-modal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="document.getElementById('claim-detail-modal').classList.remove('active')">&times;</button>
+        <h3 id="modal-claim-number" style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text-main);">Claim Details</h3>
+        <div id="modal-claim-body" style="font-size: 0.875rem; color: var(--text-muted); line-height: 1.6;">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. All insurance policies, premium collections, coverage amounts, weather anomalies, and payouts are illustrative simulation data.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype • Ethereum Sepolia Web3 Simulation</div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/contracts-config.js"></script>
+  <script src="js/abis.js"></script>
+  <script src="js/policy-hasher.js"></script>
+  <script src="js/web3.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      renderClaims();
+
+      window.addEventListener('vr:claim_added', renderClaims);
+      window.addEventListener('vr:claim_updated', renderClaims);
+
+      function renderClaims() {
+        const tbody = document.getElementById('claims-page-tbody');
+        if (!tbody) return;
+
+        const claims = VRStorage.getClaims();
+        if (claims.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">No claims registered yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = claims.map(c => {
+          const badgeClass = c.status === 'Paid' ? 'badge-success' : (c.status === 'Rejected' ? 'badge-danger' : 'badge-warning');
+          const timeStr = new Date(c.createdAt).toLocaleDateString();
+
+          return `
+            <tr>
+              <td><strong>${c.claimNumber}</strong></td>
+              <td>${c.policyNumber || 'VR-POL-2026'}</td>
+              <td>${c.eventType.replace(/_/g, ' ')}</td>
+              <td>${c.triggerMetric || 'Breached Threshold'}</td>
+              <td>₹${c.requestedAmount.toLocaleString()}</td>
+              <td><strong style="color: var(--color-success);">₹${(c.approvedAmount || 0).toLocaleString()}</strong></td>
+              <td><span class="badge ${badgeClass}">${c.status.toUpperCase()}</span></td>
+              <td>
+                ${c.sepoliaTxHash ? `<a href="${VRWeb3.getEtherscanUrl(c.sepoliaTxHash)}" target="_blank" class="hash-cell">${c.sepoliaTxHash.substring(0, 10)}... ↗</a>` : '-'}
+              </td>
+              <td style="color: var(--text-muted); font-size: 0.8rem;">${timeStr}</td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="viewClaimModal('${c.id}')">Inspect ↗</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      window.viewClaimModal = (claimId) => {
+        const claims = VRStorage.getClaims();
+        const c = claims.find(item => item.id === claimId);
+        if (!c) return;
+
+        const modal = document.getElementById('claim-detail-modal');
+        const title = document.getElementById('modal-claim-number');
+        const body = document.getElementById('modal-claim-body');
+
+        title.textContent = `Claim Audit: ${c.claimNumber}`;
+        body.innerHTML = `
+          <div style="margin-bottom: 1.15rem; border-bottom: 1px solid var(--color-card-border); padding-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
+            <div><strong>Status:</strong> <span class="badge badge-success">${c.status}</span></div>
+            <div><strong>Event Anomaly:</strong> ${c.eventType} (${c.triggerMetric})</div>
+            <div><strong>Affected Zone:</strong> Postal PIN ${c.pincode || '400053'}</div>
+            <div><strong>Submitted At:</strong> ${new Date(c.createdAt).toLocaleString()}</div>
+          </div>
+
+          <div style="margin-bottom: 1.15rem; border-bottom: 1px solid var(--color-card-border); padding-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
+            <div style="font-weight: 700; color: var(--text-main); margin-bottom: 0.15rem;">Parametric Financial Settlement:</div>
+            <div>Compensation Requested: <strong>₹${c.requestedAmount}</strong></div>
+            <div>Compensation Approved: <strong style="color: var(--color-success);">₹${c.approvedAmount}</strong></div>
+            <div>Internal Payout Ledger Ref: <code>${c.payoutRef || 'N/A'}</code></div>
+          </div>
+
+          <div>
+            <div style="font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">Ethereum Sepolia Audit Proof:</div>
+            <div style="word-break: break-all; font-family: var(--font-mono); font-size: 0.8rem; background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: var(--border-radius-sm); border: 1px solid var(--color-card-border);">
+              ${c.sepoliaTxHash || 'Pending on-chain relayer'}
+            </div>
+            ${c.sepoliaTxHash ? `<div style="margin-top: 0.65rem;"><a href="${VRWeb3.getEtherscanUrl(c.sepoliaTxHash)}" target="_blank" style="color: var(--color-accent-cyan); font-weight:600;">View On-Chain Confirmation on Sepolia Etherscan ↗</a></div>` : ''}
+          </div>
+        `;
+
+        modal.classList.add('active');
+      };
+    });
+  </script>
+</body>
+</html>

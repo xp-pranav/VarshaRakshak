@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rider Registration — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Official Supabase JS v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>BAJAJ PROJECT PROTOTYPE:</strong> <span data-i18n="disclaimer_notice">All policies, premiums, weather events, and payouts are simulated demonstration data.</span></span>
+      </div>
+      <div class="badge badge-demo">SUPABASE AUTH</div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="index.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle" data-i18n="tagline">Smart Insurance for Every Delivery Rider</span>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Theme">🌙</button>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="dashboard-main" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 180px); padding: 2.5rem 1rem;">
+      <div class="card" style="max-width: 480px; width: 100%; padding: 2.25rem 2rem; box-shadow: var(--shadow-lg);">
+        <div style="text-align: center; margin-bottom: 1.75rem;">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🛡️</div>
+          <h1 style="font-size: 1.65rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em;">Create Rider Account</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem; line-height: 1.45;">
+            Join thousands of delivery partners covered by automated parametric rainfall and climate protection.
+          </p>
+        </div>
+
+        <!-- Feedback Alert Box -->
+        <div id="signup-feedback-box" style="display: none; padding: 0.75rem 1rem; border-radius: var(--border-radius-md); font-size: 0.85rem; margin-bottom: 1.25rem;"></div>
+
+        <form id="signup-form" style="display: flex; flex-direction: column; gap: 1.15rem;">
+          <div>
+            <label for="signup-fullname" style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+              Full Legal Name
+            </label>
+            <input type="text" id="signup-fullname" class="select-control" style="width: 100%; min-height: 42px;" placeholder="e.g. Ramesh Chandra Verma" required autocomplete="name">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+            <div>
+              <label for="signup-phone" style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                Mobile Number
+              </label>
+              <input type="tel" id="signup-phone" class="select-control" style="width: 100%; min-height: 42px;" placeholder="+91 98765 43210" required autocomplete="tel">
+            </div>
+
+            <div>
+              <label for="signup-platform" style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                Primary Platform
+              </label>
+              <select id="signup-platform" class="select-control" style="width: 100%; min-height: 42px;">
+                <option value="Zomato">Zomato</option>
+                <option value="Swiggy">Swiggy</option>
+                <option value="Blinkit">Blinkit</option>
+                <option value="Zepto">Zepto</option>
+                <option value="Amazon">Amazon</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="signup-email" style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+              Email Address
+            </label>
+            <input type="email" id="signup-email" class="select-control" style="width: 100%; min-height: 42px;" placeholder="ramesh.verma@example.com" required autocomplete="email">
+          </div>
+
+          <div>
+            <label for="signup-password" style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+              Password (min. 8 characters)
+            </label>
+            <input type="password" id="signup-password" class="select-control" style="width: 100%; min-height: 42px;" placeholder="Create strong password" required minlength="8" autocomplete="new-password">
+            <div id="password-strength-bar" style="height: 4px; width: 100%; background: var(--color-card-border); margin-top: 6px; border-radius: 2px; overflow: hidden;">
+              <div id="password-strength-fill" style="width: 0%; height: 100%; background: var(--color-danger); transition: all 0.2s ease;"></div>
+            </div>
+          </div>
+
+          <div>
+            <label for="signup-confirm-password" style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+              Confirm Password
+            </label>
+            <input type="password" id="signup-confirm-password" class="select-control" style="width: 100%; min-height: 42px;" placeholder="Re-enter password" required minlength="8" autocomplete="new-password">
+          </div>
+
+          <div style="display: flex; align-items: flex-start; gap: 0.65rem; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+            <input type="checkbox" id="signup-terms" required style="accent-color: var(--color-accent-blue); width: 16px; height: 16px; margin-top: 2px; cursor: pointer;">
+            <label for="signup-terms" style="cursor: pointer; line-height: 1.45;">
+              I agree to the <a href="terms.html" target="_blank" style="color: var(--color-accent-cyan);">Terms of Service</a>, <a href="privacy.html" target="_blank" style="color: var(--color-accent-cyan);">Privacy Policy</a>, and consent to weather parametric claim evaluations.
+            </label>
+          </div>
+
+          <button type="submit" id="btn-signup-submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.65rem;">
+            Create Account & Start Onboarding ➔
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+          Already have an account? <a href="login.html" style="color: var(--color-accent-cyan); font-weight: 600;">Sign In</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. Supabase PostgreSQL authentication with Row Level Security.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype</div>
+    </footer>
+  </div>
+
+  <!-- Shared Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      VRSupabase.init();
+
+      const form = document.getElementById('signup-form');
+      const passInput = document.getElementById('signup-password');
+      const confirmInput = document.getElementById('signup-confirm-password');
+      const strengthFill = document.getElementById('password-strength-fill');
+      const feedback = document.getElementById('signup-feedback-box');
+      const submitBtn = document.getElementById('btn-signup-submit');
+
+      // Password strength meter
+      passInput.addEventListener('input', () => {
+        const val = passInput.value;
+        let score = 0;
+        if (val.length >= 8) score += 30;
+        if (/[A-Z]/.test(val)) score += 25;
+        if (/[0-9]/.test(val)) score += 25;
+        if (/[^A-Za-z0-9]/.test(val)) score += 20;
+
+        strengthFill.style.width = `${score}%`;
+        if (score < 40) {
+          strengthFill.style.background = 'var(--color-danger)';
+        } else if (score < 75) {
+          strengthFill.style.background = 'var(--color-warning)';
+        } else {
+          strengthFill.style.background = 'var(--color-success)';
+        }
+      });
+
+      function showFeedback(msg, isError = true) {
+        feedback.style.display = 'block';
+        feedback.style.background = isError ? 'var(--color-danger-bg)' : 'var(--color-success-bg)';
+        feedback.style.color = isError ? '#f87171' : '#34d399';
+        feedback.style.border = `1px solid ${isError ? 'var(--color-danger-border)' : 'var(--color-success-border)'}`;
+        feedback.textContent = msg;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fullName = document.getElementById('signup-fullname').value.trim();
+        const phone = document.getElementById('signup-phone').value.trim();
+        const platform = document.getElementById('signup-platform').value;
+        const email = document.getElementById('signup-email').value.trim();
+        const password = passInput.value;
+        const confirmPass = confirmInput.value;
+
+        if (password !== confirmPass) {
+          showFeedback('Passwords do not match. Please re-enter.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating Account...';
+        feedback.style.display = 'none';
+
+        try {
+          const res = await VRSupabase.signUp(email, password, {
+            fullName,
+            phone,
+            platform
+          });
+
+          // Handle email confirmation requirement
+          if (!res.session) {
+            feedback.style.display = 'block';
+            feedback.style.background = 'var(--color-success-bg)';
+            feedback.style.color = '#34d399';
+            feedback.style.border = '1px solid var(--color-success-border)';
+            feedback.innerHTML = `<strong>✓ Account Created Successfully!</strong><br>
+              A confirmation email has been dispatched to <strong>${email}</strong>.<br>
+              Please verify your email address, then sign in to begin onboarding.
+              <div style="margin-top: 0.85rem;">
+                <a href="login.html" class="btn btn-success btn-sm btn-block" style="color: #fff; text-decoration: none;">Proceed to Sign In ➔</a>
+              </div>`;
+            submitBtn.style.display = 'none';
+            return;
+          }
+
+          showFeedback('✓ Account created successfully! Launching rider onboarding...', false);
+
+          // Save pending onboarding profile state in storage
+          const pendingRider = {
+            id: res.user ? res.user.id : `rider-${Date.now()}`,
+            name: fullName,
+            phone: phone,
+            platform: platform,
+            email: email,
+            primaryPincode: "400053",
+            demoBalance: 1500,
+            avatar: "🛵",
+            onboardingComplete: false
+          };
+          localStorage.setItem('vr_pending_onboarding', JSON.stringify(pendingRider));
+
+          setTimeout(() => {
+            window.location.href = 'onboarding.html';
+          }, 800);
+        } catch (err) {
+          const errMsg = err.message || '';
+          if (errMsg.toLowerCase().includes('already registered') || errMsg.toLowerCase().includes('user already exists')) {
+            showFeedback('An account with this email address already exists. Please sign in instead.');
+          } else if (errMsg.toLowerCase().includes('rate limit')) {
+            showFeedback('Email rate limit reached. Please wait a few minutes before trying again or sign in with an existing account.');
+          } else if (errMsg.toLowerCase().includes('password')) {
+            showFeedback('Password is too weak. Please ensure it has at least 8 characters with numbers and letters.');
+          } else {
+            showFeedback(errMsg || 'Signup failed. Please try again.');
+          }
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account & Start Onboarding ➔';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safe Route Suggestions & Waterlogging — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>HYPERLOCAL SAFE ROUTING:</strong> Real-time flood depth monitoring and alternative hazard avoidance routes for delivery two-wheelers.</span>
+      </div>
+      <div class="badge badge-demo">DEMO HAZARDS</div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="index.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle" data-i18n="tagline">Smart Insurance for Every Delivery Rider</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item"><a href="rider.html"><span class="nav-icon">🏠</span> Home</a></li>
+          <li class="nav-item"><a href="policies.html"><span class="nav-icon">🛡️</span> My Policy</a></li>
+          <li class="nav-item"><a href="claims.html"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item"><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Active Rider"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Theme">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" data-i18n="safe_routes_title">Safe Route Suggestions & Waterlogging Monitoring</h1>
+          <div class="page-description">
+            Avoid flooded roads and waterlogged subways with live risk-scored alternative routing.
+          </div>
+        </div>
+
+        <div>
+          <a href="admin.html" class="btn btn-outline btn-sm">Log New Road Hazard +</a>
+        </div>
+      </div>
+
+      <!-- Main Map & Route Comparison -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
+        <!-- Leaflet Map Container -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+          <div class="map-container" id="full-routes-map" style="height: 520px;"></div>
+        </div>
+
+        <!-- Route Comparison Metrics Panel -->
+        <div style="display: flex; flex-direction: column; gap: 1.15rem;">
+          <!-- Recommended Route Card -->
+          <div class="card" style="border-left: 4px solid var(--color-success);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+              <span class="badge badge-success">RECOMMENDED SAFE ROUTE</span>
+              <span style="font-weight: 700; color: var(--color-success); font-variant-numeric: tabular-nums;">Risk: 12/100</span>
+            </div>
+
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">
+              Via Link Road Elevated Corridor
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.45;">
+              Avoids Milan Subway & SV Road curb-flooding. Road surface is elevated and clear for two-wheelers.
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: var(--color-card-hover); padding: 0.75rem 0.85rem; border-radius: var(--border-radius-md); font-size: 0.85rem; margin-bottom: 0.85rem; border: 1px solid var(--color-card-border);">
+              <div><span style="color: var(--text-muted);">Distance:</span> <strong style="font-variant-numeric: tabular-nums;">4.6 km</strong></div>
+              <div><span style="color: var(--text-muted);">Duration:</span> <strong style="font-variant-numeric: tabular-nums;">14 mins</strong></div>
+            </div>
+
+            <div style="font-size: 0.8rem; color: var(--color-accent-teal); display: flex; align-items: center; gap: 0.35rem;">
+              <span>✓</span> Verified free of severe waterlogging hazards
+            </div>
+          </div>
+
+          <!-- Direct Route Warning Card -->
+          <div class="card" style="border-left: 4px solid var(--color-danger);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+              <span class="badge badge-danger">DIRECT ROUTE (HIGH HAZARD)</span>
+              <span style="font-weight: 700; color: var(--color-danger); font-variant-numeric: tabular-nums;">Risk: 88/100</span>
+            </div>
+
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">
+              Via Milan Subway Underpass
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.45;">
+              Direct route hits active 48cm deep waterlogging inside the underpass. High vehicle stall & delivery delay probability.
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: var(--color-card-hover); padding: 0.75rem 0.85rem; border-radius: var(--border-radius-md); font-size: 0.85rem; margin-bottom: 0.85rem; border: 1px solid var(--color-card-border);">
+              <div><span style="color: var(--text-muted);">Distance:</span> <strong style="font-variant-numeric: tabular-nums;">3.8 km</strong></div>
+              <div><span style="color: var(--text-muted);">Duration:</span> <strong style="font-variant-numeric: tabular-nums;">32+ mins (Stalled)</strong></div>
+            </div>
+
+            <div style="font-size: 0.8rem; color: #f87171; display: flex; align-items: center; gap: 0.35rem;">
+              <span>❌</span> Impassable hazard: Milan Subway Underpass (48cm water depth)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Waterlogging Spot Registry -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🌊</span>
+            <span>Hyperlocal Waterlogging Severity Index</span>
+          </div>
+          <span class="badge badge-demo">STREET LEVEL OBSERVATION</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Location & Landmark</th>
+                <th>Postal PIN</th>
+                <th>Water Depth</th>
+                <th>Severity Classification</th>
+                <th>Traffic Status</th>
+                <th>Data Source</th>
+              </tr>
+            </thead>
+            <tbody id="routes-waterlogging-tbody">
+              <!-- Populated by script -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. All insurance policies, premium collections, coverage amounts, weather anomalies, and payouts are illustrative simulation data.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype • Ethereum Sepolia Web3 Simulation</div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/waterlogging.js"></script>
+  <script src="js/routes.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      VRRoutes.initMap('full-routes-map');
+      renderWaterloggingTable();
+
+      function renderWaterloggingTable() {
+        const tbody = document.getElementById('routes-waterlogging-tbody');
+        if (!tbody) return;
+
+        const reports = VRStorage.getWaterloggingReports();
+        tbody.innerHTML = reports.map(r => {
+          let badgeClass = "badge-success";
+          if (r.severity === 'SEVERE') badgeClass = "badge-danger";
+          else if (r.severity === 'HIGH') badgeClass = "badge-warning";
+          else if (r.severity === 'MODERATE') badgeClass = "badge-warning";
+
+          return `
+            <tr>
+              <td><strong>${r.roadName}</strong><br><small style="color: var(--text-muted);">${r.landmark || '-'}</small></td>
+              <td>PIN ${r.pincode}</td>
+              <td><strong>${r.waterDepthCm} cm</strong></td>
+              <td><span class="badge ${badgeClass}">${r.severity}</span></td>
+              <td><span style="font-size: 0.85rem;">${r.status.replace(/_/g, ' ')}</span></td>
+              <td><span class="badge badge-sim">${r.dataSource}</span></td>
+            </tr>
+          `;
+        }).join('');
+      }
+    });
+  </script>
+</body>
+</html>

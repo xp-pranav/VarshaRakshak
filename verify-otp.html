@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Verification — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Official Supabase JS v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>BAJAJ PROJECT PROTOTYPE:</strong> <span data-i18n="disclaimer_notice">All policies, premiums, weather events, and payouts are simulated demonstration data.</span></span>
+      </div>
+      <div class="badge badge-demo">SUPABASE AUTH</div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="index.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle" data-i18n="tagline">Smart Insurance for Every Delivery Rider</span>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="login.html" class="btn btn-outline btn-sm">Sign In ➔</a>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="dashboard-main" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 180px); padding: 2rem 1rem;">
+      <div class="card" style="max-width: 440px; width: 100%; padding: 2.25rem 2rem; box-shadow: var(--shadow-lg); text-align: center;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📱</div>
+        <h1 style="font-size: 1.65rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em;">Verify Security Code</h1>
+        <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem; line-height: 1.45;">
+          Enter the 6-digit one-time verification passcode sent to your registered phone / email.
+        </p>
+
+        <div id="otp-feedback-box" style="display: none; padding: 0.75rem 1rem; border-radius: var(--border-radius-md); font-size: 0.85rem; margin: 1.25rem 0;"></div>
+
+        <form id="otp-form" style="margin-top: 1.5rem;">
+          <div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <input type="text" maxlength="1" class="select-control otp-digit" style="width: 46px; height: 52px; font-size: 1.5rem; font-weight: 700; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums;" autofocus required inputmode="numeric">
+            <input type="text" maxlength="1" class="select-control otp-digit" style="width: 46px; height: 52px; font-size: 1.5rem; font-weight: 700; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums;" required inputmode="numeric">
+            <input type="text" maxlength="1" class="select-control otp-digit" style="width: 46px; height: 52px; font-size: 1.5rem; font-weight: 700; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums;" required inputmode="numeric">
+            <input type="text" maxlength="1" class="select-control otp-digit" style="width: 46px; height: 52px; font-size: 1.5rem; font-weight: 700; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums;" required inputmode="numeric">
+            <input type="text" maxlength="1" class="select-control otp-digit" style="width: 46px; height: 52px; font-size: 1.5rem; font-weight: 700; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums;" required inputmode="numeric">
+            <input type="text" maxlength="1" class="select-control otp-digit" style="width: 46px; height: 52px; font-size: 1.5rem; font-weight: 700; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums;" required inputmode="numeric">
+          </div>
+
+          <button type="submit" id="btn-otp-verify" class="btn btn-primary btn-lg" style="width: 100%;">
+            Verify & Proceed ➔
+          </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+          Didn't receive code? <button id="btn-resend-otp" style="background: none; border: none; color: var(--color-accent-cyan); font-weight: 600; cursor: pointer; text-decoration: underline;">Resend Code (30s)</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype</div>
+    </footer>
+  </div>
+
+  <!-- Shared Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      VRSupabase.init();
+
+      const inputs = document.querySelectorAll('.otp-digit');
+      const form = document.getElementById('otp-form');
+      const feedback = document.getElementById('otp-feedback-box');
+      const verifyBtn = document.getElementById('btn-otp-verify');
+
+      // Auto-advance cursor on digit input
+      inputs.forEach((input, idx) => {
+        input.addEventListener('input', (e) => {
+          if (e.target.value.length === 1 && idx < inputs.length - 1) {
+            inputs[idx + 1].focus();
+          }
+        });
+
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace' && !input.value && idx > 0) {
+            inputs[idx - 1].focus();
+          }
+        });
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = Array.from(inputs).map(i => i.value).join('');
+        if (code.length < 6) return;
+
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = 'Verifying Passcode...';
+        feedback.style.display = 'none';
+
+        try {
+          // If live supabase is configured
+          if (VRSupabase.isConfigured && VRSupabase.currentUser) {
+            await VRSupabase.verifyOtp(VRSupabase.currentUser.email, code);
+          }
+
+          feedback.style.display = 'block';
+          feedback.style.background = 'var(--color-success-bg)';
+          feedback.style.color = '#34d399';
+          feedback.style.border = '1px solid var(--color-success-border)';
+          feedback.textContent = 'Code verified successfully! Redirecting...';
+
+          setTimeout(() => {
+            window.location.href = 'onboarding.html';
+          }, 800);
+        } catch (err) {
+          feedback.style.display = 'block';
+          feedback.style.background = 'var(--color-danger-bg)';
+          feedback.style.color = '#f87171';
+          feedback.style.border = '1px solid var(--color-danger-border)';
+          feedback.textContent = err.message || 'Invalid or expired OTP code.';
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Verify & Proceed ➔';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

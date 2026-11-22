@@ -1,0 +1,23 @@
+[
+  "constructor(address _policyRegistry, address _triggerRegistry)",
+  "event ClaimRegistered(bytes32 indexed claimId, bytes32 indexed policyId, bytes32 indexed triggerEventHash, bytes32 evaluationHash, bytes32 pseudonymousRider, uint256 requestedAmount)",
+  "event ClaimStatusUpdated(bytes32 indexed claimId, uint8 oldStatus, uint8 newStatus, uint256 approvedAmount, string notes)",
+  "event OfficerAuthorized(address indexed officer, bool isAuthorized)",
+  "event ContractPaused(address indexed account)",
+  "event ContractUnpaused(address indexed account)",
+  "function owner() view returns (address)",
+  "function paused() view returns (bool)",
+  "function authorizedClaimsOfficers(address) view returns (bool)",
+  "function setOfficer(address officer, bool status) external",
+  "function setRegistries(address _policyRegistry, address _triggerRegistry) external",
+  "function pause() external",
+  "function unpause() external",
+  "function registerClaim(bytes32 claimId, bytes32 policyId, bytes32 triggerEventHash, bytes32 pseudonymousRider, uint256 requestedAmount) external",
+  "function registerClaimWithEvaluation(bytes32 claimId, bytes32 policyId, bytes32 triggerEventHash, bytes32 evaluationHash, bytes32 pseudonymousRider, uint256 requestedAmount) external",
+  "function approveClaim(bytes32 claimId, uint256 approvedAmount, string calldata notes) external",
+  "function rejectClaim(bytes32 claimId, string calldata notes) external",
+  "function updateClaimStatus(bytes32 claimId, uint8 newStatus, uint256 approvedAmount, string calldata notes) external",
+  "function verifyEvaluationHash(bytes32 claimId, bytes32 expectedHash) external view returns (bool)",
+  "function getClaim(bytes32 claimId) external view returns (bytes32 policyId, bytes32 triggerEventHash, bytes32 pseudonymousRider, uint256 requestedAmount, uint256 approvedAmount, uint8 status, uint64 createdAt, uint64 updatedAt, string memory notes)",
+  "function totalClaims() external view returns (uint256)"
+]

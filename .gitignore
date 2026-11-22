@@ -1,0 +1,17 @@
+# Environment Variables (Secrets)
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Hardhat & Solc artifacts
+cache/
+artifacts/
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

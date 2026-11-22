@@ -1,0 +1,25 @@
+{
+  "name": "v1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --env-file=.env tests/live-authentication-and-ui-audit.mjs",
+    "test:auth": "node --env-file=.env tests/live-authentication-and-ui-audit.mjs",
+    "test:security": "node --env-file=.env tests/authentication-security-audit.js",
+    "test:platform": "node --env-file=.env tests/platform-comprehensive-audit.js",
+    "test:responsive": "node tests/responsive-viewport-audit.mjs",
+    "test:all": "node --env-file=.env tests/live-authentication-and-ui-audit.mjs && node --env-file=.env tests/authentication-security-audit.js && node --env-file=.env tests/platform-comprehensive-audit.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.17",
+    "@nomicfoundation/hardhat-toolbox": "^7.0.0",
+    "@supabase/supabase-js": "^2.119.2",
+    "ethers": "^6.17.0",
+    "hardhat": "^3.22.0",
+    "solc": "^0.8.39"
+  }
+}

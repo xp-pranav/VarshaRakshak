@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rider Profile | VarshaRakshak (वर्षा रक्षक)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <style>
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .profile-card {
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: var(--border-radius-lg);
+      padding: 1.5rem;
+      position: relative;
+      transition: all var(--duration-normal) var(--ease-out);
+      box-shadow: var(--shadow-sm);
+    }
+    .profile-card:hover {
+      border-color: var(--color-card-border-hover);
+      box-shadow: var(--shadow-md);
+    }
+    .profile-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--color-card-border);
+    }
+    .profile-card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--text-main);
+    }
+    .profile-data-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .profile-data-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      font-size: 0.875rem;
+    }
+    .profile-data-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .profile-data-value {
+      font-weight: 600;
+      color: var(--text-main);
+      text-align: right;
+      max-width: 60%;
+      word-break: break-word;
+    }
+    .completion-bar-container {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: var(--border-radius-full);
+      height: 8px;
+      overflow: hidden;
+      margin: 0.65rem 0 0.4rem;
+    }
+    .completion-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0284c7 0%, #10b981 100%);
+      border-radius: var(--border-radius-full);
+      transition: width 0.6s var(--ease-out);
+    }
+    /* Modal Styles */
+    .edit-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 11, 20, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .edit-modal-backdrop.active {
+      display: flex;
+    }
+    .edit-modal {
+      background: var(--color-primary-navy);
+      border: 1px solid var(--color-card-border-hover);
+      border-radius: var(--border-radius-xl);
+      width: 100%;
+      max-width: 580px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Universal Navbar -->
+    <header class="app-header">
+      <a href="index.html" class="brand-logo">
+        <div class="logo-shield">VR</div>
+        <div>
+          <div class="logo-text">VarshaRakshak</div>
+          <span class="logo-subtext">वर्षा रक्षक • Rider Profile</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item"><a href="rider.html"><span class="nav-icon">🏠</span> Home</a></li>
+          <li class="nav-item"><a href="policies.html"><span class="nav-icon">🛡️</span> My Policy</a></li>
+          <li class="nav-item"><a href="claims.html"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item active"><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Select Active Rider"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Dark/Light Mode">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <!-- Profile Header Cockpit -->
+      <div class="page-header" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-xl); padding: 2rem; margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <!-- Avatar with emoji picker trigger -->
+            <div style="position: relative;">
+              <div id="profile-avatar-large" style="width: 84px; height: 84px; font-size: 3rem; background: var(--color-card-hover); border: 2px solid var(--color-accent-cyan); border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); cursor: pointer;" title="Click to change avatar">
+                🛵
+              </div>
+              <span style="position: absolute; bottom: -4px; right: -4px; background: var(--color-success); color: white; font-size: 0.75rem; border-radius: var(--border-radius-full); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--color-primary-navy);">✓</span>
+            </div>
+
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <h1 class="page-title" id="profile-full-name" style="font-size: 1.75rem; margin-bottom: 0;">Raju Sharma</h1>
+                <span class="badge badge-live">Verified Partner</span>
+                <span class="badge badge-sim" id="profile-platform-badge">Zomato Partner</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 1rem; color: var(--text-muted); font-size: 0.875rem; margin-top: 0.35rem; flex-wrap: wrap;">
+                <span>ID: <strong id="profile-rider-id" style="color: var(--text-main);">ZOM-78219</strong></span>
+                <span>•</span>
+                <span>Hub: <strong id="profile-hub-name" style="color: var(--text-main);">Andheri West</strong></span>
+                <span>•</span>
+                <span>PIN: <strong id="profile-pincode" style="color: var(--text-main);">400053</strong></span>
+                <span>•</span>
+                <span>Active Coverage: <strong id="profile-coverage-status" style="color: var(--color-success);">Standard Weekly Shield</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile Completion Meter -->
+          <div style="min-width: 260px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--color-card-border); padding: 1rem 1.25rem; border-radius: var(--border-radius-lg);">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+              <span style="font-weight: 600; color: var(--text-main);">Profile Completion</span>
+              <span id="profile-completion-pct" style="font-weight: 800; color: var(--color-accent-cyan);">92%</span>
+            </div>
+            <div class="completion-bar-container">
+              <div class="completion-bar-fill" id="profile-completion-fill" style="width: 92%;"></div>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+              <span>6 of 6 Sections Complete</span>
+              <span>KYC Verified</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--color-card-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Cloud Sync:</span>
+            <span class="badge badge-live" id="profile-sync-badge">Supabase Connected</span>
+            <span style="font-size: 0.75rem; color: var(--text-dim);">PostgreSQL RLS Active</span>
+          </div>
+          <div style="display: flex; gap: 0.75rem;">
+            <button id="btn-export-profile" class="btn btn-outline btn-sm">Export Profile Card (JSON)</button>
+            <a href="onboarding.html" class="btn btn-secondary btn-sm">Re-run Onboarding Flow</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6 Profile Sections Grid -->
+      <div class="profile-grid">
+        <!-- 1. Personal Information -->
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-title">
+              <span>👤</span> Personal Information
+            </div>
+            <button class="btn btn-outline btn-xs" onclick="openEditModal('personal')">Edit</button>
+          </div>
+          <div class="profile-data-list">
+            <div class="profile-data-item">
+              <span class="profile-data-label">Full Legal Name</span>
+              <span class="profile-data-value" id="val-full-name">Raju Ramakant Sharma</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Primary Mobile Phone</span>
+              <span class="profile-data-value" id="val-phone">+91 98201 23456</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Email Address</span>
+              <span class="profile-data-value" id="val-email">raju.sharma@example.com</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Date of Birth</span>
+              <span class="profile-data-value" id="val-dob">14 Aug 1994 (Age 31)</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Gender</span>
+              <span class="profile-data-value" id="val-gender">Male</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Residential Address -->
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-title">
+              <span>🏠</span> Residential Address
+            </div>
+            <button class="btn btn-outline btn-xs" onclick="openEditModal('address')">Edit</button>
+          </div>
+          <div class="profile-data-list">
+            <div class="profile-data-item">
+              <span class="profile-data-label">Street / House No</span>
+              <span class="profile-data-value" id="val-address">Flat 302, Sai Shraddha Chs</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Locality / Landmark</span>
+              <span class="profile-data-value" id="val-locality">Versova Link Road, Four Bungalows</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">City & State</span>
+              <span class="profile-data-value" id="val-city">Mumbai, Maharashtra</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Postal PIN Code</span>
+              <span class="profile-data-value" id="val-pincode">400053</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Years in Metro Area</span>
+              <span class="profile-data-value" id="val-years-city">8+ Years</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Delivery Work Profile -->
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-title">
+              <span>🛵</span> Delivery Work Profile
+            </div>
+            <button class="btn btn-outline btn-xs" onclick="openEditModal('work')">Edit</button>
+          </div>
+          <div class="profile-data-list">
+            <div class="profile-data-item">
+              <span class="profile-data-label">Primary Gig Platform</span>
+              <span class="profile-data-value" id="val-work-platform">Zomato Food Delivery</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Platform Partner ID</span>
+              <span class="profile-data-value" id="val-work-partner-id">ZOM-78219</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Operating Hub / Zone</span>
+              <span class="profile-data-value" id="val-work-zone">Andheri West & Lokhandwala</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Daily Shift Hours</span>
+              <span class="profile-data-value" id="val-work-hours">8.0 Hours / Day</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Weekly Working Days</span>
+              <span class="profile-data-value" id="val-work-days">6 Days / Week</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Est. Daily Earnings</span>
+              <span class="profile-data-value" id="val-work-earnings" style="color: var(--color-accent-cyan);">₹950 / Day</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Vehicle Information -->
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-title">
+              <span>⚡</span> Vehicle Information
+            </div>
+            <button class="btn btn-outline btn-xs" onclick="openEditModal('vehicle')">Edit</button>
+          </div>
+          <div class="profile-data-list">
+            <div class="profile-data-item">
+              <span class="profile-data-label">Vehicle Type</span>
+              <span class="profile-data-value" id="val-vehicle-type">Electric Scooter (EV)</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Registration Number</span>
+              <span class="profile-data-value" id="val-vehicle-reg">MH 02 EV 8891</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Vehicle Ownership</span>
+              <span class="profile-data-value" id="val-vehicle-owner">Self-Owned</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Driving License Number</span>
+              <span class="profile-data-value" id="val-vehicle-dl">MH-0220180054321</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Commercial Insurance</span>
+              <span class="profile-data-value" id="val-vehicle-ins" style="color: var(--color-success);">Valid till Oct 2027</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Emergency Contact & Nominee -->
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-title">
+              <span>🆘</span> Emergency & Nominee
+            </div>
+            <button class="btn btn-outline btn-xs" onclick="openEditModal('emergency')">Edit</button>
+          </div>
+          <div class="profile-data-list">
+            <div class="profile-data-item">
+              <span class="profile-data-label">Primary Emergency Contact</span>
+              <span class="profile-data-value" id="val-emergency-name">Sunita Raju Sharma</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Relationship</span>
+              <span class="profile-data-value" id="val-emergency-rel">Spouse</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Emergency Mobile</span>
+              <span class="profile-data-value" id="val-emergency-phone">+91 98201 98765</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Claim Beneficiary (Nominee)</span>
+              <span class="profile-data-value" id="val-nominee-name">Sunita Raju Sharma</span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">UPI ID for Payouts</span>
+              <span class="profile-data-value" id="val-payout-upi" style="color: var(--color-accent-cyan);">raju.sharma@okaxis</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Consents & Verification Status -->
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-card-title">
+              <span>🛡️</span> Consents & Protection
+            </div>
+            <button class="btn btn-outline btn-xs" onclick="openEditModal('consents')">Update</button>
+          </div>
+          <div class="profile-data-list">
+            <div class="profile-data-item">
+              <span class="profile-data-label">Weather Alert SMS</span>
+              <span class="profile-data-value" id="val-consent-sms"><span class="badge badge-success">Active</span></span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Hyperlocal GPS Tracking</span>
+              <span class="profile-data-value" id="val-consent-gps"><span class="badge badge-success">Consented</span></span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Parametric Auto-Claim</span>
+              <span class="profile-data-value" id="val-consent-claim"><span class="badge badge-success">Enabled</span></span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Zero-Knowledge Hash</span>
+              <span class="profile-data-value" id="val-consent-privacy"><span class="badge badge-live">Verified (SHA-256)</span></span>
+            </div>
+            <div class="profile-data-item">
+              <span class="profile-data-label">Policy Status</span>
+              <span class="profile-data-value" style="color: var(--color-success); font-weight: 700;">Active 7-Day Protection</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Universal Edit Modal Drawer -->
+  <div id="edit-modal-backdrop" class="edit-modal-backdrop">
+    <div class="edit-modal">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-card-border);">
+        <h3 id="modal-title" style="margin: 0; font-size: 1.25rem;">Edit Section</h3>
+        <button class="btn btn-outline btn-xs" onclick="closeEditModal()" style="border-radius: var(--border-radius-full); width: 32px; height: 32px; padding: 0;">✕</button>
+      </div>
+      
+      <form id="edit-section-form">
+        <div id="modal-form-fields" style="display: flex; flex-direction: column; gap: 1.15rem;">
+          <!-- Dynamically Injected -->
+        </div>
+
+        <div style="margin-top: 1.75rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-section">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shared Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/contracts-config.js"></script>
+  <script src="js/web3.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    let currentEditSection = null;
+
+    function loadProfileData() {
+      const rider = VRStorage.getCurrentRider();
+      if (!rider) return;
+
+      // Identity Header
+      document.getElementById('profile-avatar-large').textContent = rider.avatar || '🛵';
+      document.getElementById('profile-full-name').textContent = rider.name || 'Rider Partner';
+      document.getElementById('profile-platform-badge').textContent = `${rider.platform || 'Zomato'} Partner`;
+      document.getElementById('profile-rider-id').textContent = rider.partnerId || 'ZOM-78219';
+      document.getElementById('profile-hub-name').textContent = rider.locality || 'Andheri West';
+      document.getElementById('profile-pincode').textContent = rider.primaryPincode || '400053';
+
+      // Section 1: Personal
+      document.getElementById('val-full-name').textContent = rider.name || 'Raju Sharma';
+      document.getElementById('val-phone').textContent = rider.phone || '+91 98201 23456';
+      document.getElementById('val-email').textContent = `${(rider.name || 'rider').toLowerCase().replace(/\s+/g, '.')}@example.com`;
+      document.getElementById('val-dob').textContent = '14 Aug 1994 (Age 31)';
+      document.getElementById('val-gender').textContent = 'Male';
+
+      // Section 2: Address
+      document.getElementById('val-address').textContent = 'Flat 302, Sai Shraddha Chs';
+      document.getElementById('val-locality').textContent = rider.locality || 'Versova Link Road, Four Bungalows';
+      document.getElementById('val-city').textContent = 'Mumbai, Maharashtra';
+      document.getElementById('val-pincode').textContent = rider.primaryPincode || '400053';
+      document.getElementById('val-years-city').textContent = '8+ Years';
+
+      // Section 3: Work
+      document.getElementById('val-work-platform').textContent = `${rider.platform || 'Zomato'} Delivery Partner`;
+      document.getElementById('val-work-partner-id').textContent = rider.partnerId || 'ZOM-78219';
+      document.getElementById('val-work-zone').textContent = rider.locality || 'Andheri West & Lokhandwala';
+      document.getElementById('val-work-hours').textContent = '8.0 Hours / Day';
+      document.getElementById('val-work-days').textContent = '6 Days / Week';
+      document.getElementById('val-work-earnings').textContent = `₹${rider.dailyAverageIncome || 950} / Day`;
+
+      // Section 4: Vehicle
+      document.getElementById('val-vehicle-type').textContent = rider.vehicle || 'Electric Scooter (EV)';
+      document.getElementById('val-vehicle-reg').textContent = rider.vehicleNumber || 'MH 02 EV 8891';
+      document.getElementById('val-vehicle-owner').textContent = 'Self-Owned';
+      document.getElementById('val-vehicle-dl').textContent = 'MH-0220180054321';
+      document.getElementById('val-vehicle-ins').textContent = 'Valid till Oct 2027';
+
+      // Section 5: Emergency
+      document.getElementById('val-emergency-name').textContent = 'Sunita Raju Sharma';
+      document.getElementById('val-emergency-rel').textContent = 'Spouse';
+      document.getElementById('val-emergency-phone').textContent = '+91 98201 98765';
+      document.getElementById('val-nominee-name').textContent = 'Sunita Raju Sharma';
+      document.getElementById('val-payout-upi').textContent = `${(rider.name || 'raju').toLowerCase().replace(/\s+/g, '.')}@okaxis`;
+    }
+
+    function openEditModal(sectionKey) {
+      currentEditSection = sectionKey;
+      const modal = document.getElementById('edit-modal-backdrop');
+      const title = document.getElementById('modal-title');
+      const container = document.getElementById('modal-form-fields');
+      const rider = VRStorage.getCurrentRider();
+
+      container.innerHTML = '';
+
+      if (sectionKey === 'personal') {
+        title.textContent = 'Edit Personal Details';
+        container.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="edit-name" class="form-control" value="${rider.name || 'Raju Sharma'}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" id="edit-phone" class="form-control" value="${rider.phone || '+91 98201 23456'}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="edit-email" class="form-control" value="${rider.email || 'raju.sharma@example.com'}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" id="edit-dob" class="form-control" value="1994-08-14">
+          </div>
+        `;
+      } else if (sectionKey === 'address') {
+        title.textContent = 'Edit Residential Address';
+        container.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Address Line / Street</label>
+            <input type="text" id="edit-address-line" class="form-control" value="Flat 302, Sai Shraddha Chs" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Locality / Area</label>
+            <input type="text" id="edit-locality" class="form-control" value="${rider.locality || 'Andheri West'}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">PIN Code</label>
+            <input type="text" id="edit-pincode" class="form-control" value="${rider.primaryPincode || '400053'}" required>
+          </div>
+        `;
+      } else if (sectionKey === 'work') {
+        title.textContent = 'Edit Delivery Work Details';
+        container.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Primary Platform</label>
+            <select id="edit-platform" class="select-control form-control">
+              <option value="Zomato" ${rider.platform === 'Zomato' ? 'selected' : ''}>Zomato</option>
+              <option value="Swiggy" ${rider.platform === 'Swiggy' ? 'selected' : ''}>Swiggy</option>
+              <option value="Blinkit" ${rider.platform === 'Blinkit' ? 'selected' : ''}>Blinkit</option>
+              <option value="Zepto" ${rider.platform === 'Zepto' ? 'selected' : ''}>Zepto</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Partner Worker ID</label>
+            <input type="text" id="edit-partner-id" class="form-control" value="${rider.partnerId || 'ZOM-78219'}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estimated Daily Earnings (₹)</label>
+            <input type="number" id="edit-earnings" class="form-control" value="${rider.dailyAverageIncome || 950}" required>
+          </div>
+        `;
+      } else if (sectionKey === 'vehicle') {
+        title.textContent = 'Edit Vehicle Information';
+        container.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Vehicle Type</label>
+            <select id="edit-vehicle-type" class="select-control form-control">
+              <option value="Electric Scooter (EV)">Electric Scooter (EV)</option>
+              <option value="Petrol Scooter">Petrol Scooter</option>
+              <option value="Motorcycle">Motorcycle</option>
+              <option value="Bicycle">Bicycle</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vehicle Registration Number</label>
+            <input type="text" id="edit-vehicle-reg" class="form-control" value="${rider.vehicleNumber || 'MH 02 EV 8891'}" required>
+          </div>
+        `;
+      } else if (sectionKey === 'emergency') {
+        title.textContent = 'Edit Emergency & Payout Details';
+        container.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Primary Emergency Contact Name</label>
+            <input type="text" id="edit-em-name" class="form-control" value="Sunita Raju Sharma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emergency Phone</label>
+            <input type="tel" id="edit-em-phone" class="form-control" value="+91 98201 98765" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nominee Name</label>
+            <input type="text" id="edit-nominee" class="form-control" value="Sunita Raju Sharma" required>
+          </div>
+        `;
+      } else if (sectionKey === 'consents') {
+        title.textContent = 'Update Policy Consents';
+        container.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <label style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer;">
+              <input type="checkbox" checked id="edit-consent-sms">
+              <span>Enable Real-Time Weather SMS & WhatsApp Disruption Alerts</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer;">
+              <input type="checkbox" checked id="edit-consent-gps">
+              <span>Enable Safe Corridor GPS Location Matching</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer;">
+              <input type="checkbox" checked id="edit-consent-claim">
+              <span>Consent to Instant Parametric Payout Authorization</span>
+            </label>
+          </div>
+        `;
+      }
+
+      modal.classList.add('active');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal-backdrop').classList.remove('active');
+      currentEditSection = null;
+    }
+
+    document.getElementById('edit-section-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rider = VRStorage.getCurrentRider();
+      if (!rider) return;
+
+      const btn = document.getElementById('btn-save-section');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        if (currentEditSection === 'personal') {
+          const name = document.getElementById('edit-name').value.trim();
+          const phone = document.getElementById('edit-phone').value.trim();
+          rider.name = name;
+          rider.phone = phone;
+          VRStorage.updateRider(rider);
+          if (window.VRSupabase && VRSupabase.currentUser) {
+            await VRSupabase.savePersonalDetails(VRSupabase.currentUser.id, {
+              fullName: name,
+              phone: phone
+            });
+          }
+        } else if (currentEditSection === 'address') {
+          const locality = document.getElementById('edit-locality').value.trim();
+          const pincode = document.getElementById('edit-pincode').value.trim();
+          rider.locality = locality;
+          rider.primaryPincode = pincode;
+          VRStorage.updateRider(rider);
+        } else if (currentEditSection === 'work') {
+          const platform = document.getElementById('edit-platform').value;
+          const partnerId = document.getElementById('edit-partner-id').value.trim();
+          const earnings = Number(document.getElementById('edit-earnings').value);
+          rider.platform = platform;
+          rider.partnerId = partnerId;
+          rider.dailyAverageIncome = earnings;
+          VRStorage.updateRider(rider);
+        } else if (currentEditSection === 'vehicle') {
+          const vehicle = document.getElementById('edit-vehicle-type').value;
+          const reg = document.getElementById('edit-vehicle-reg').value.trim();
+          rider.vehicle = vehicle;
+          rider.vehicleNumber = reg;
+          VRStorage.updateRider(rider);
+        }
+
+        loadProfileData();
+        closeEditModal();
+        showToast('Profile updated and synchronized successfully!', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Error saving profile changes: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Changes';
+      }
+    });
+
+    // Export Profile
+    document.getElementById('btn-export-profile').addEventListener('click', () => {
+      const rider = VRStorage.getCurrentRider();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rider, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `varsharakshak-profile-${rider.id}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+      showToast('Profile exported as JSON!', 'info');
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      VRSupabase.init();
+      loadProfileData();
+    });
+  </script>
+</body>
+</html>

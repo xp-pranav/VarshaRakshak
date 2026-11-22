@@ -1,0 +1,503 @@
+{
+  "contractName": "TriggerRegistry",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "ContractPaused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "ContractUnpaused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "oracle",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isAuthorized",
+          "type": "bool"
+        }
+      ],
+      "name": "OracleAuthorized",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "eventHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "evidenceHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "enum TriggerRegistry.EventType",
+          "name": "eventType",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "pincode",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "intensityValue",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "durationMinutes",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "timestamp",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isDemoSimulation",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "oracle",
+          "type": "address"
+        }
+      ],
+      "name": "WeatherTriggerRecorded",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "authorizedOracles",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "eventHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getTrigger",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "enum TriggerRegistry.EventType",
+          "name": "",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        },
+        {
+          "internalType": "uint32",
+          "name": "",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "paused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "eventHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "enum TriggerRegistry.EventType",
+          "name": "eventType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "pincode",
+          "type": "string"
+        },
+        {
+          "internalType": "uint32",
+          "name": "intensityValue",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint16",
+          "name": "durationMinutes",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bool",
+          "name": "isDemoSimulation",
+          "type": "bool"
+        }
+      ],
+      "name": "recordTrigger",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "eventHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "evidenceHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "enum TriggerRegistry.EventType",
+          "name": "eventType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "pincode",
+          "type": "string"
+        },
+        {
+          "internalType": "uint32",
+          "name": "intensityValue",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint16",
+          "name": "durationMinutes",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bool",
+          "name": "isDemoSimulation",
+          "type": "bool"
+        }
+      ],
+      "name": "recordTriggerWithEvidence",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "oracle",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "name": "setAuthorizedOracle",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalTriggers",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "triggerList",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "triggers",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "eventHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "evidenceHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "enum TriggerRegistry.EventType",
+          "name": "eventType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "pincode",
+          "type": "string"
+        },
+        {
+          "internalType": "uint32",
+          "name": "intensityValue",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint16",
+          "name": "durationMinutes",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint64",
+          "name": "timestamp",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bool",
+          "name": "isVerified",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "isDemoSimulation",
+          "type": "bool"
+        },
+        {
+          "internalType": "address",
+          "name": "oracle",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unpause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "eventHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "expectedEvidenceHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifyEvidenceHash",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "eventHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "verifyTrigger",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        },
+        {
+          "internalType": "enum TriggerRegistry.EventType",
+          "name": "eventType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "pincode",
+          "type": "string"
+        },
+        {
+          "internalType": "uint32",
+          "name": "intensityValue",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint16",
+          "name": "durationMinutes",
+          "type": "uint16"
+        },
+        {
+          "internalType": "bool",
+          "name": "isDemoSimulation",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080604052348015600e575f5ffd5b505f80546001600160a01b0319163390811782558152600160208190526040909120805460ff19169091179055611477806100485f395ff3fe608060405234801561000f575f5ffd5b50600436106100e5575f3560e01c8063851fe26b11610088578063bf335bba11610063578063bf335bba146101eb578063c5012d47146101fe578063c7a6de4d14610211578063e0637b3d14610224575f5ffd5b8063851fe26b146101985780638da5cb5b146101b9578063a90a3e17146101e3575f5ffd5b8063477db48b116100c3578063477db48b146101385780635c975abb1461015b57806361c992a31461016e5780638456cb5914610190575f5ffd5b806315a11fd7146100e9578063353378f3146100fe5780633f4ba83a14610130575b5f5ffd5b6100fc6100f7366004610eb3565b610249565b005b61011161010c366004610f45565b6105b5565b6040516101279a99989796959493929190610fbe565b60405180910390f35b6100fc6106b8565b61014b61014636600461103f565b610717565b6040519015158152602001610127565b5f5461014b90600160a01b900460ff1681565b61014b61017c366004611075565b60016020525f908152604090205460ff1681565b6100fc610898565b6101ab6101a6366004610f45565b6108fd565b604051908152602001610127565b5f546101cb906001600160a01b031681565b6040516001600160a01b039091168152602001610127565b6003546101ab565b6101116101f9366004610f45565b61091c565b6100fc61020c366004611095565b610b4a565b6100fc61021f36600461111e565b610bce565b610237610232366004610f45565b610c55565b6040516101279695949392919061114f565b5f546001600160a01b031633148061026f5750335f9081526001602052604090205460ff165b6102945760405162461bcd60e51b815260040161028b906111a0565b60405180910390fd5b5f54600160a01b900460ff16156102bd5760405162461bcd60e51b815260040161028b906111e6565b5f88815260026020526040902060040154600160301b90046001600160401b03161561033b5760405162461bcd60e51b815260206004820152602760248201527f5472696767657252656769737472793a204576656e7420616c726561647920726044820152661958dbdc99195960ca1b606482015260840161028b565b6040805161014081019091528881526020810188610359578961035b565b885b815260200187600481111561037257610372610f5c565b815260200186868080601f0160208091040260200160405190810160405280939291908181526020018383808284375f92018290525093855250505063ffffffff861660208084019190915261ffff86166040808501919091526001600160401b034216606085015260016080850181905286151560a08601523360c0909501949094528c835260028083529281902085518155918501518285015584015191810180549193909160ff19169083600481111561043157610431610f5c565b02179055506060820151600382019061044a90826112cc565b5060808201516004828101805460a086015160c087015160e088015161010089015163ffffffff90971665ffffffffffff199094169390931764010000000061ffff90931692909202919091176effffffffffffffffff0000000000001916600160301b6001600160401b039092169190910260ff60701b191617600160701b911515919091021760ff60781b1916600160781b931515939093029290921790915561012090920151600590910180546001600160a01b0319166001600160a01b03909216919091179055600380546001810182555f919091527fc2575a0e9e593c00f959f8c92f12db2869c3395a3b0502d05e2516446f71f85b01899055869081111561055a5761055a610f5c565b876105655788610567565b875b897fbc981621ca8f1ef959b3491ba4c6401f20de59ec29da929cf815433fc07dd50f888888884289336040516105a3979695949392919061138a565b60405180910390a45050505050505050565b600260208190525f9182526040909120805460018201549282015460038301805492949360ff909216926105e89061123d565b80601f01602080910402602001604051908101604052809291908181526020018280546106149061123d565b801561065f5780601f106106365761010080835404028352916020019161065f565b820191905f5260205f20905b81548152906001019060200180831161064257829003601f168201915b5050506004840154600590940154929363ffffffff81169361ffff64010000000083041693506001600160401b03600160301b830416925060ff600160701b8304811692600160781b900416906001600160a01b03168a565b5f546001600160a01b031633146106e15760405162461bcd60e51b815260040161028b906113f9565b5f805460ff60a01b1916815560405133917f5b65b0c1363b3003db9bcc5e1fd8805a6d6bf5bf6dc9d3431ee4494cd7d1176691a2565b5f828152600260208181526040808420815161014081018352815481526001820154938101939093529283015484939183019060ff16600481111561075e5761075e610f5c565b600481111561076f5761076f610f5c565b81526020016003820180546107839061123d565b80601f01602080910402602001604051908101604052809291908181526020018280546107af9061123d565b80156107fa5780601f106107d1576101008083540402835291602001916107fa565b820191905f5260205f20905b8154815290600101906020018083116107dd57829003601f168201915b5050509183525050600482015463ffffffff8116602083015261ffff64010000000082041660408301526001600160401b03600160301b82048116606084015260ff600160701b8304811615156080850152600160781b909204909116151560a08301526005909201546001600160a01b031660c091820152820151919250165f03610889575f915050610892565b60200151821490505b92915050565b5f546001600160a01b031633146108c15760405162461bcd60e51b815260040161028b906113f9565b5f805460ff60a01b1916600160a01b17815560405133917f81990fd9a5c552b8e3677917d8a03c07678f0d2cb68f88b634aca2022e9bd19f91a2565b6003818154811061090c575f80fd5b5f91825260209091200154905081565b5f5f5f60605f5f5f5f5f5f5f60025f8d81526020019081526020015f20604051806101400160405290815f820154815260200160018201548152602001600282015f9054906101000a900460ff16600481111561097b5761097b610f5c565b600481111561098c5761098c610f5c565b81526020016003820180546109a09061123d565b80601f01602080910402602001604051908101604052809291908181526020018280546109cc9061123d565b8015610a175780601f106109ee57610100808354040283529160200191610a17565b820191905f5260205f20905b8154815290600101906020018083116109fa57829003601f168201915b5050509183525050600482015463ffffffff8116602083015261ffff64010000000082041660408301526001600160401b03600160301b82048116606084015260ff600160701b8304811615156080850152600160781b909204909116151560a08301526005909201546001600160a01b031660c091820152820151919250165f03610af55760405162461bcd60e51b815260206004820152602760248201527f5472696767657252656769737472793a205472696767657220646f6573206e6f6044820152661d08195e1a5cdd60ca1b606482015260840161028b565b805f015181602001518260400151836060015184608001518560a001518660c001518760e001518861010001518961012001519a509a509a509a509a509a509a509a509a509a50509193959799509193959799565b5f546001600160a01b0316331480610b705750335f9081526001602052604090205460ff165b610b8c5760405162461bcd60e51b815260040161028b906111a0565b5f54600160a01b900460ff1615610bb55760405162461bcd60e51b815260040161028b906111e6565b610bc58788888888888888610249565b50505050505050565b5f546001600160a01b03163314610bf75760405162461bcd60e51b815260040161028b906113f9565b6001600160a01b0382165f81815260016020908152604091829020805460ff191685151590811790915591519182527f82a8fb1e779ea45ad427cc612e47087f5386a567e49dce488185e40646fa48d5910160405180910390a25050565b5f5f60605f5f5f5f60025f8981526020019081526020015f20604051806101400160405290815f820154815260200160018201548152602001600282015f9054906101000a900460ff166004811115610cb057610cb0610f5c565b6004811115610cc157610cc1610f5c565b8152602001600382018054610cd59061123d565b80601f0160208091040260200160405190810160405280929190818152602001828054610d019061123d565b8015610d4c5780601f10610d2357610100808354040283529160200191610d4c565b820191905f5260205f20905b815481529060010190602001808311610d2f57829003601f168201915b5050509183525050600482015463ffffffff8116602083015261ffff64010000000082041660408301526001600160401b03600160301b82048116606084015260ff600160701b8304811615156080850152600160781b909204909116151560a08301526005909201546001600160a01b031660c091820152820151919250165f03610df657505060408051602081019091525f8082529550859450925083915081905080610e20565b60018160400151826060015183608001518460a00151856101000151965096509650965096509650505b91939550919395565b803560058110610e37575f5ffd5b919050565b5f5f83601f840112610e4c575f5ffd5b5081356001600160401b03811115610e62575f5ffd5b602083019150836020828501011115610e79575f5ffd5b9250929050565b803563ffffffff81168114610e37575f5ffd5b803561ffff81168114610e37575f5ffd5b80358015158114610e37575f5ffd5b5f5f5f5f5f5f5f5f60e0898b031215610eca575f5ffd5b8835975060208901359650610ee160408a01610e29565b955060608901356001600160401b03811115610efb575f5ffd5b610f078b828c01610e3c565b9096509450610f1a905060808a01610e80565b9250610f2860a08a01610e93565b9150610f3660c08a01610ea4565b90509295985092959890939650565b5f60208284031215610f55575f5ffd5b5035919050565b634e487b7160e01b5f52602160045260245ffd5b60058110610f8c57634e487b7160e01b5f52602160045260245ffd5b9052565b5f81518084528060208401602086015e5f602082860101526020601f19601f83011685010191505092915050565b8a8152896020820152610fd4604082018a610f70565b61014060608201525f610feb61014083018a610f90565b63ffffffff9890981660808301525061ffff9590951660a08601526001600160401b039390931660c085015290151560e084015215156101008301526001600160a01b031661012090910152949350505050565b5f5f60408385031215611050575f5ffd5b50508035926020909101359150565b80356001600160a01b0381168114610e37575f5ffd5b5f60208284031215611085575f5ffd5b61108e8261105f565b9392505050565b5f5f5f5f5f5f5f60c0888a0312156110ab575f5ffd5b873596506110bb60208901610e29565b955060408801356001600160401b038111156110d5575f5ffd5b6110e18a828b01610e3c565b90965094506110f4905060608901610e80565b925061110260808901610e93565b915061111060a08901610ea4565b905092959891949750929550565b5f5f6040838503121561112f575f5ffd5b6111388361105f565b915061114660208401610ea4565b90509250929050565b86151581526111616020820187610f70565b60c060408201525f61117660c0830187610f90565b63ffffffff9590951660608301525061ffff929092166080830152151560a0909101529392505050565b60208082526026908201527f5472696767657252656769737472793a204e6f7420617574686f72697a6564206040820152656f7261636c6560d01b606082015260800190565b60208082526023908201527f5472696767657252656769737472793a20436f6e7472616374206973207061756040820152621cd95960ea1b606082015260800190565b634e487b7160e01b5f52604160045260245ffd5b600181811c9082168061125157607f821691505b60208210810361126f57634e487b7160e01b5f52602260045260245ffd5b50919050565b601f8211156112c757828211156112c757805f5260205f20601f840160051c60208510156112a057505f5b90810190601f840160051c035f5b818110156112c3575f838201556001016112ae565b5050505b505050565b81516001600160401b038111156112e5576112e5611229565b6112f9816112f3845461123d565b84611275565b6020601f82116001811461132b575f83156113145750848201515b5f19600385901b1c1916600184901b178455611383565b5f84815260208120601f198516915b8281101561135a578785015182556020948501946001909201910161133a565b508482101561137757868401515f19600387901b60f8161c191681555b505060018360011b0184555b5050505050565b60c081528660c0820152868860e08301375f60e088830181019190915263ffffffff96909616602082015261ffff9490941660408501526001600160401b03929092166060840152151560808301526001600160a01b031660a0820152601f909201601f191690910101919050565b60208082526028908201527f5472696767657252656769737472793a2043616c6c6572206973206e6f74207460408201526734329037bbb732b960c11b60608201526080019056fea26469706673582212208b092c11441747cde52592416aea890a4c4761e3d4c45a56e4d214d2f0583ebc64736f6c63430008270033"
+}

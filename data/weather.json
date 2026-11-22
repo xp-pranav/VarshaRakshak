@@ -1,0 +1,75 @@
+{
+  "zones": {
+    "400053": {
+      "pincode": "400053",
+      "locality": "Andheri West, Mumbai",
+      "lat": 19.1136,
+      "lng": 72.8697,
+      "current": {
+        "temperature": 28.5,
+        "humidity": 88,
+        "rainfallRateMmHr": 12.0,
+        "windSpeedKmh": 24.5,
+        "condition": "Moderate Rain",
+        "conditionCode": "MODERATE_RAIN",
+        "alertLevel": "Moderate Rain",
+        "alertMessage": "Wet roads and slippery turns across SV Road. Moderate delays anticipated.",
+        "alertMessage_hi": "एसवी रोड पर गीली सड़कें और फिसलन। यात्रा में मध्यम देरी की संभावना।",
+        "alertMessage_mr": "एसव्ही रोडवर ओले रस्ते आणि घसरण. मध्यम विलंबाची शक्यता.",
+        "updatedAt": "2026-11-21T19:45:00Z"
+      },
+      "hourlyForecast": [
+        { "time": "20:00", "rainfallMm": 18, "temp": 28, "risk": "Moderate" },
+        { "time": "21:00", "rainfallMm": 42, "temp": 27, "risk": "High" },
+        { "time": "22:00", "rainfallMm": 58, "temp": 26, "risk": "Extreme" },
+        { "time": "23:00", "rainfallMm": 30, "temp": 26, "risk": "High" },
+        { "time": "00:00", "rainfallMm": 10, "temp": 27, "risk": "Moderate" },
+        { "time": "01:00", "rainfallMm": 4, "temp": 27, "risk": "Normal" }
+      ]
+    },
+    "400050": {
+      "pincode": "400050",
+      "locality": "Bandra West, Mumbai",
+      "lat": 19.0596,
+      "lng": 72.8295,
+      "current": {
+        "temperature": 29.0,
+        "humidity": 84,
+        "rainfallRateMmHr": 5.0,
+        "windSpeedKmh": 18.0,
+        "condition": "Light Showers",
+        "conditionCode": "LIGHT_RAIN",
+        "alertLevel": "Normal",
+        "alertMessage": "Light passing showers. Normal delivery operating conditions.",
+        "alertMessage_hi": "हल्की फुहारें। सामान्य डिलीवरी संचालन स्थितियां।",
+        "alertMessage_mr": "हलक्या सरी. सामान्य वितरण कार्य परिस्थिती.",
+        "updatedAt": "2026-11-21T19:45:00Z"
+      }
+    },
+    "400069": {
+      "pincode": "400069",
+      "locality": "Andheri East, Mumbai",
+      "lat": 19.1197,
+      "lng": 72.8464,
+      "current": {
+        "temperature": 28.2,
+        "humidity": 90,
+        "rainfallRateMmHr": 22.0,
+        "windSpeedKmh": 28.0,
+        "condition": "Heavy Showers",
+        "conditionCode": "HEAVY_RAIN",
+        "alertLevel": "Moderate Rain",
+        "alertMessage": "Approaching heavy rainfall front over Western Express Highway corridor.",
+        "alertMessage_hi": "वेस्टर्न एक्सप्रेस हाईवे पर भारी बारिश की संभावना।",
+        "alertMessage_mr": "वेस्टर्न एक्सप्रेस हायवेवर जोरदार पावसाची शक्यता.",
+        "updatedAt": "2026-11-21T19:45:00Z"
+      }
+    }
+  },
+  "alertThresholds": {
+    "normal": { "maxMmHr": 5, "label": "Normal", "color": "#12b886" },
+    "moderate": { "minMmHr": 5, "maxMmHr": 25, "label": "Moderate Rain", "color": "#f59f00" },
+    "heavy": { "minMmHr": 25, "maxMmHr": 60, "label": "Heavy Rain", "color": "#f76707" },
+    "extreme": { "minMmHr": 60, "label": "Extreme Rain", "color": "#e03131" }
+  }
+}

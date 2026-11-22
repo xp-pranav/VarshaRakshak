@@ -1,0 +1,15 @@
+{
+  "status": "DEPLOYMENT_READY",
+  "compiledContracts": [
+    "PolicyRegistry",
+    "TriggerRegistry",
+    "ClaimManager",
+    "PayoutAuthorizer"
+  ],
+  "chainId": 11155111,
+  "network": "Ethereum Sepolia Testnet",
+  "latestBlock": 12183733,
+  "remixGuide": "docs/REMIX_DEPLOYMENT.md",
+  "deployScript": "scripts/deploy-sepolia.js",
+  "timestamp": "2026-11-21T19:03:09.158Z"
+}

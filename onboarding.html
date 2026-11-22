@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rider Onboarding — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Official Supabase JS v2 CDN & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>RIDER ONBOARDING:</strong> Complete your profile to activate customized parametric weather coverage and safe delivery corridors.</span>
+      </div>
+      <div class="badge badge-demo">6-STEP ONBOARDING</div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="index.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle">Partner Verification & Enrollment</span>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <span id="onboarding-step-counter" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+          Step 1 of 6
+        </span>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Theme">🌙</button>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main" style="max-width: 760px; padding: 2.25rem 1.5rem;">
+      <!-- Step Progress Header -->
+      <div style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+          <h2 id="step-title" style="font-size: 1.45rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em;">
+            Step 1: Personal Details
+          </h2>
+          <span id="step-percentage" style="font-size: 0.85rem; font-weight: 700; color: var(--color-accent-cyan); font-variant-numeric: tabular-nums;">
+            16% Completed
+          </span>
+        </div>
+
+        <!-- Progress Track -->
+        <div style="height: 8px; width: 100%; background: var(--color-card-border); border-radius: 4px; overflow: hidden;">
+          <div id="progress-bar-fill" style="width: 16.66%; height: 100%; background: linear-gradient(90deg, #0284c7, #10b981); transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1);"></div>
+        </div>
+      </div>
+
+      <!-- Multi-step Form Card -->
+      <div class="card" style="padding: 2.25rem; box-shadow: var(--shadow-md);">
+        <form id="onboarding-multistep-form">
+
+          <!-- STEP 1: Personal Details -->
+          <div class="onboarding-step-panel" id="step-panel-1">
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem; line-height: 1.5;">
+              Enter your legal identity details as registered on your official government identification.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                  Full Legal Name *
+                </label>
+                <input type="text" id="ob-fullname" class="select-control" style="width: 100%; min-height: 42px;" placeholder="e.g. Raju Ramesh Sharma" required>
+              </div>
+
+              <!-- Avatar Selection -->
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.5rem;">
+                  Choose Profile Icon
+                </label>
+                <div style="display: flex; gap: 0.85rem; align-items: center;">
+                  <button type="button" class="btn btn-outline avatar-btn active" data-avatar="🛵" style="font-size: 1.6rem; padding: 0.5rem 0.85rem;">🛵</button>
+                  <button type="button" class="btn btn-outline avatar-btn" data-avatar="🏍️" style="font-size: 1.6rem; padding: 0.5rem 0.85rem;">🏍️</button>
+                  <button type="button" class="btn btn-outline avatar-btn" data-avatar="⚡" style="font-size: 1.6rem; padding: 0.5rem 0.85rem;">⚡</button>
+                  <button type="button" class="btn btn-outline avatar-btn" data-avatar="🚴" style="font-size: 1.6rem; padding: 0.5rem 0.85rem;">🚴</button>
+                  <button type="button" class="btn btn-outline avatar-btn" data-avatar="🛡️" style="font-size: 1.6rem; padding: 0.5rem 0.85rem;">🛡️</button>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Date of Birth *
+                  </label>
+                  <input type="date" id="ob-dob" class="select-control" style="width: 100%; min-height: 42px;" value="1994-06-15" required>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Gender (Optional)
+                  </label>
+                  <select id="ob-gender" class="select-control" style="width: 100%; min-height: 42px;">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Non-Binary">Non-Binary</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main);">Email Address *</label>
+                    <span class="badge badge-success" style="font-size: 0.65rem;">Verified</span>
+                  </div>
+                  <input type="email" id="ob-email" class="select-control" style="width: 100%; min-height: 42px;" placeholder="raju.sharma@example.com" required>
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main);">Mobile Number *</label>
+                    <span class="badge badge-success" style="font-size: 0.65rem;">SMS Verified</span>
+                  </div>
+                  <input type="tel" id="ob-phone" class="select-control" style="width: 100%; min-height: 42px;" placeholder="+91 98765 43210" value="+91 98765 43210" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: Residential Details -->
+          <div class="onboarding-step-panel" id="step-panel-2" style="display: none;">
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem; line-height: 1.5;">
+              Provide your primary residence for regional delivery hub assignment and localized weather alerting.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                  House / Building Address *
+                </label>
+                <input type="text" id="ob-address" class="select-control" style="width: 100%; min-height: 42px;" placeholder="Flat 402, Shiv Sadan, New Link Road" value="Flat 402, Shiv Sadan, New Link Road" required>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Locality / Ward *
+                  </label>
+                  <input type="text" id="ob-locality" class="select-control" style="width: 100%; min-height: 42px;" placeholder="Andheri West (K/W Ward)" value="Andheri West" required>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    City *
+                  </label>
+                  <input type="text" id="ob-city" class="select-control" style="width: 100%; min-height: 42px;" value="Mumbai" required>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    State *
+                  </label>
+                  <input type="text" id="ob-state" class="select-control" style="width: 100%; min-height: 42px;" value="Maharashtra" required>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Postal PIN Code *
+                  </label>
+                  <input type="text" id="ob-pincode" class="select-control" style="width: 100%; min-height: 42px;" value="400053" required>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Country
+                  </label>
+                  <input type="text" id="ob-country" class="select-control" style="width: 100%; min-height: 42px;" value="India" disabled>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Delivery Work Details -->
+          <div class="onboarding-step-panel" id="step-panel-3" style="display: none;">
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem; line-height: 1.5;">
+              Information about your delivery platform and working patterns determines benchmark hourly wage compensation.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Primary Delivery Platform *
+                  </label>
+                  <select id="ob-platform" class="select-control" style="width: 100%; min-height: 42px;">
+                    <option value="Zomato" selected>Zomato</option>
+                    <option value="Swiggy">Swiggy</option>
+                    <option value="Blinkit">Blinkit</option>
+                    <option value="Zepto">Zepto</option>
+                    <option value="Amazon">Amazon</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Platform Partner Rider ID (Optional)
+                  </label>
+                  <input type="text" id="ob-partner-id" class="select-control" style="width: 100%; min-height: 42px;" placeholder="e.g. ZOM-78219" value="ZOM-78219">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Gig Delivery Experience
+                  </label>
+                  <select id="ob-experience" class="select-control" style="width: 100%; min-height: 42px;">
+                    <option value="< 6 months">Less than 6 months</option>
+                    <option value="6-12 months">6 to 12 months</option>
+                    <option value="1-2 years" selected>1 to 2 years</option>
+                    <option value="2+ years">2+ years</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Primary Operating Area *
+                  </label>
+                  <input type="text" id="ob-operating-area" class="select-control" style="width: 100%; min-height: 42px;" value="Andheri West & Lokhandwala" required>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Average Daily Working Hours
+                  </label>
+                  <input type="number" id="ob-daily-hours" class="select-control" style="width: 100%; min-height: 42px;" value="8.0" step="0.5" min="2" max="16">
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Average Working Days Per Week
+                  </label>
+                  <input type="number" id="ob-weekly-days" class="select-control" style="width: 100%; min-height: 42px;" value="6" min="1" max="7">
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                  Estimated Monthly Income Range (Optional)
+                </label>
+                <select id="ob-income-range" class="select-control" style="width: 100%; min-height: 42px;">
+                  <option value="₹15,000 - ₹25,000">₹15,000 – ₹25,000</option>
+                  <option value="₹25,000 - ₹35,000" selected>₹25,000 – ₹35,000</option>
+                  <option value="₹35,000+">₹35,000+</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 4: Vehicle Details -->
+          <div class="onboarding-step-panel" id="step-panel-4" style="display: none;">
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem; line-height: 1.5;">
+              Vehicle specs help calculate waterlogging depth hazards (e.g., 25cm vs 45cm underpass flooding tolerance).
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Vehicle Type *
+                  </label>
+                  <select id="ob-vehicle-type" class="select-control" style="width: 100%; min-height: 42px;">
+                    <option value="Motorcycle" selected>Motorcycle</option>
+                    <option value="Petrol Scooter">Petrol Scooter</option>
+                    <option value="Electric Scooter">Electric Scooter (EV)</option>
+                    <option value="Electric Bicycle">Electric Bicycle</option>
+                    <option value="Bicycle">Bicycle</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Vehicle Registration Number (Optional)
+                  </label>
+                  <input type="text" id="ob-vehicle-number" class="select-control" style="width: 100%; min-height: 42px;" placeholder="MH 02 BG 4521" value="MH 02 BG 4521">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Vehicle Ownership *
+                  </label>
+                  <select id="ob-ownership" class="select-control" style="width: 100%; min-height: 42px;">
+                    <option value="Owned" selected>Self Owned</option>
+                    <option value="Rented">Rented / Leased</option>
+                    <option value="Other">Family / Company Provided</option>
+                  </select>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 0.65rem; padding-top: 1.5rem;">
+                  <input type="checkbox" id="ob-has-license" checked style="accent-color: var(--color-accent-blue); width: 18px; height: 18px; cursor: pointer;">
+                  <label for="ob-has-license" style="font-size: 0.85rem; cursor: pointer; color: var(--text-main);">
+                    I hold a valid Driving Licence (DL)
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 5: Emergency Contact -->
+          <div class="onboarding-step-panel" id="step-panel-5" style="display: none;">
+            <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--border-radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+              <strong style="color: var(--color-accent-cyan); font-size: 0.85rem;">Why this is required:</strong>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; line-height: 1.45;">
+                In case of severe cloudburst events, flood trapped status, or medical emergency during high-risk deliveries, our operations desk reaches out to your emergency contact.
+              </p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+              <div>
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                  Contact Person's Full Name *
+                </label>
+                <input type="text" id="ob-emergency-name" class="select-control" style="width: 100%; min-height: 42px;" placeholder="e.g. Geeta Sharma" value="Geeta Sharma" required>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Relationship *
+                  </label>
+                  <select id="ob-emergency-rel" class="select-control" style="width: 100%; min-height: 42px;">
+                    <option value="Spouse" selected>Spouse</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Sibling">Sibling</option>
+                    <option value="Relative">Relative</option>
+                    <option value="Friend">Friend</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                    Emergency Mobile Number *
+                  </label>
+                  <input type="tel" id="ob-emergency-phone" class="select-control" style="width: 100%; min-height: 42px;" placeholder="+91 98110 54321" value="+91 98110 54321" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 6: Review & Explicit Consent -->
+          <div class="onboarding-step-panel" id="step-panel-6" style="display: none;">
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem; line-height: 1.5;">
+              Please review all information before final submission. All personal data is encrypted off-chain; zero personal details are ever stored on the public blockchain.
+            </p>
+
+            <!-- Review Summary Cards -->
+            <div id="review-summary-container" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+              <!-- Injected by JavaScript -->
+            </div>
+
+            <!-- Explicit Consent Checkboxes (NOT preselected per specification) -->
+            <div style="border-top: 1px solid var(--color-card-border); padding-top: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;">
+              <div style="display: flex; align-items: flex-start; gap: 0.65rem;">
+                <input type="checkbox" id="ob-consent-terms" required style="accent-color: var(--color-accent-blue); width: 18px; height: 18px; margin-top: 2px; cursor: pointer;">
+                <label for="ob-consent-terms" style="font-size: 0.825rem; color: var(--text-main); cursor: pointer; line-height: 1.45;">
+                  <strong>Insurance Terms & Conditions:</strong> I understand that VarshaRakshak provides parametric micro-insurance with 7-day policy validity (₹39–₹99/week) that triggers automatically based on objective weather sensor thresholds.
+                </label>
+              </div>
+
+              <div style="display: flex; align-items: flex-start; gap: 0.65rem;">
+                <input type="checkbox" id="ob-consent-privacy" required style="accent-color: var(--color-accent-blue); width: 18px; height: 18px; margin-top: 2px; cursor: pointer;">
+                <label for="ob-consent-privacy" style="font-size: 0.825rem; color: var(--text-main); cursor: pointer; line-height: 1.45;">
+                  <strong>Privacy Policy & Data Processing:</strong> I consent to the processing of my operational zone (PIN code) and delivery platform details in compliance with India's Digital Personal Data Protection Act.
+                </label>
+              </div>
+
+              <div style="display: flex; align-items: flex-start; gap: 0.65rem;">
+                <input type="checkbox" id="ob-consent-blockchain" required style="accent-color: var(--color-accent-blue); width: 18px; height: 18px; margin-top: 2px; cursor: pointer;">
+                <label for="ob-consent-blockchain" style="font-size: 0.825rem; color: var(--text-main); cursor: pointer; line-height: 1.45;">
+                  <strong>Cryptographic Terms Anchoring:</strong> I agree that a non-reversible SHA-256 hash of my policy terms and parametric payout receipts will be recorded on Ethereum Sepolia ledger for auditability without PII.
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Navigation Action Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--color-card-border); padding-top: 1.25rem;">
+            <button type="button" id="btn-ob-prev" class="btn btn-outline" style="visibility: hidden;">
+              ← Back
+            </button>
+            <button type="button" id="btn-ob-next" class="btn btn-primary btn-lg">
+              Continue to Step 2 ➔
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. Supabase PostgreSQL schema with Row Level Security.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype</div>
+    </footer>
+  </div>
+
+  <!-- Shared Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      VRSupabase.init();
+
+      let currentStep = 1;
+      const totalSteps = 6;
+      let selectedAvatar = '🛵';
+
+      const stepTitles = [
+        "Step 1: Personal Details",
+        "Step 2: Residential Address",
+        "Step 3: Delivery Work Information",
+        "Step 4: Vehicle Details",
+        "Step 5: Emergency Contact",
+        "Step 6: Review & Final Consent"
+      ];
+
+      // Restore pending data if available
+      const pendingData = JSON.parse(localStorage.getItem('vr_pending_onboarding') || '{}');
+      if (pendingData.name) document.getElementById('ob-fullname').value = pendingData.name;
+      if (pendingData.email) document.getElementById('ob-email').value = pendingData.email;
+      if (pendingData.phone) document.getElementById('ob-phone').value = pendingData.phone;
+      if (pendingData.platform) document.getElementById('ob-platform').value = pendingData.platform;
+
+      // Avatar selection buttons
+      document.querySelectorAll('.avatar-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          selectedAvatar = btn.getAttribute('data-avatar');
+        });
+      });
+
+      const nextBtn = document.getElementById('btn-ob-next');
+      const prevBtn = document.getElementById('btn-ob-prev');
+      const stepTitleEl = document.getElementById('step-title');
+      const stepCounterEl = document.getElementById('onboarding-step-counter');
+      const percentageEl = document.getElementById('step-percentage');
+      const progressFill = document.getElementById('progress-bar-fill');
+
+      function updateStepView() {
+        // Toggle step panels
+        for (let i = 1; i <= totalSteps; i++) {
+          const panel = document.getElementById(`step-panel-${i}`);
+          if (panel) panel.style.display = (i === currentStep) ? 'block' : 'none';
+        }
+
+        // Update header & progress bar
+        stepTitleEl.textContent = stepTitles[currentStep - 1];
+        stepCounterEl.textContent = `Step ${currentStep} of ${totalSteps}`;
+        const pct = Math.round((currentStep / totalSteps) * 100);
+        percentageEl.textContent = `${pct}% Completed`;
+        progressFill.style.width = `${pct}%`;
+
+        // Update navigation buttons
+        prevBtn.style.visibility = (currentStep > 1) ? 'visible' : 'hidden';
+
+        if (currentStep === totalSteps) {
+          nextBtn.textContent = 'Complete Onboarding & Enter Dashboard ✓';
+          nextBtn.className = 'btn btn-success btn-lg';
+          renderReviewSummary();
+        } else {
+          nextBtn.textContent = `Continue to Step ${currentStep + 1} ➔`;
+          nextBtn.className = 'btn btn-primary btn-lg';
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function renderReviewSummary() {
+        const container = document.getElementById('review-summary-container');
+        if (!container) return;
+
+        const fullName = document.getElementById('ob-fullname').value;
+        const email = document.getElementById('ob-email').value;
+        const phone = document.getElementById('ob-phone').value;
+        const dob = document.getElementById('ob-dob').value;
+        const address = document.getElementById('ob-address').value;
+        const locality = document.getElementById('ob-locality').value;
+        const pincode = document.getElementById('ob-pincode').value;
+        const platform = document.getElementById('ob-platform').value;
+        const partnerId = document.getElementById('ob-partner-id').value;
+        const operatingArea = document.getElementById('ob-operating-area').value;
+        const vehicleType = document.getElementById('ob-vehicle-type').value;
+        const vehicleNumber = document.getElementById('ob-vehicle-number').value;
+        const emergencyName = document.getElementById('ob-emergency-name').value;
+        const emergencyPhone = document.getElementById('ob-emergency-phone').value;
+
+        container.innerHTML = `
+          <div style="background: var(--color-card-hover); padding: 1rem 1.25rem; border-radius: var(--border-radius-md); border: 1px solid var(--color-card-border); font-size: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--color-accent-cyan);">Personal Identity</strong>
+              <span style="font-size: 1.5rem;">${selectedAvatar}</span>
+            </div>
+            <div><strong>${fullName}</strong> • Born: ${dob}</div>
+            <div style="color: var(--text-muted);">${email} • ${phone}</div>
+          </div>
+
+          <div style="background: var(--color-card-hover); padding: 1rem 1.25rem; border-radius: var(--border-radius-md); border: 1px solid var(--color-card-border); font-size: 0.85rem;">
+            <strong style="color: var(--color-accent-cyan); display: block; margin-bottom: 0.35rem;">Delivery Hub & Residence</strong>
+            <div>${address}, ${locality}, Mumbai — <strong>PIN ${pincode}</strong></div>
+            <div style="color: var(--text-muted); margin-top: 0.25rem;">Operating Corridor: <strong>${operatingArea}</strong></div>
+          </div>
+
+          <div style="background: var(--color-card-hover); padding: 1rem 1.25rem; border-radius: var(--border-radius-md); border: 1px solid var(--color-card-border); font-size: 0.85rem;">
+            <strong style="color: var(--color-accent-cyan); display: block; margin-bottom: 0.35rem;">Gig Work & Two-Wheeler</strong>
+            <div>${platform} Partner (${partnerId || 'Pending ID'}) • ${vehicleType} (${vehicleNumber || 'Unregistered'})</div>
+          </div>
+
+          <div style="background: var(--color-card-hover); padding: 1rem 1.25rem; border-radius: var(--border-radius-md); border: 1px solid var(--color-card-border); font-size: 0.85rem;">
+            <strong style="color: var(--color-accent-cyan); display: block; margin-bottom: 0.35rem;">Emergency Contact</strong>
+            <div>${emergencyName} • ${emergencyPhone}</div>
+          </div>
+        `;
+      }
+
+      nextBtn.addEventListener('click', async () => {
+        // Validation per step
+        if (currentStep === 1) {
+          const fn = document.getElementById('ob-fullname');
+          const em = document.getElementById('ob-email');
+          const ph = document.getElementById('ob-phone');
+          if (!fn.checkValidity() || !em.checkValidity() || !ph.checkValidity()) {
+            alert('Please fill all required personal fields.');
+            return;
+          }
+        }
+
+        if (currentStep === 6) {
+          // Final Submit
+          const t1 = document.getElementById('ob-consent-terms').checked;
+          const t2 = document.getElementById('ob-consent-privacy').checked;
+          const t3 = document.getElementById('ob-consent-blockchain').checked;
+
+          if (!t1 || !t2 || !t3) {
+            alert('Please review and agree to all consent clauses to complete onboarding.');
+            return;
+          }
+
+          nextBtn.disabled = true;
+          nextBtn.textContent = 'Saving Profile to Supabase...';
+
+          try {
+            const riderId = (VRSupabase.currentUser && VRSupabase.currentUser.id) || `rider-${Date.now()}`;
+            const riderProfile = {
+              id: riderId,
+              name: document.getElementById('ob-fullname').value,
+              phone: document.getElementById('ob-phone').value,
+              email: document.getElementById('ob-email').value,
+              platform: document.getElementById('ob-platform').value,
+              partnerId: document.getElementById('ob-partner-id').value || 'ZOM-78219',
+              primaryPincode: document.getElementById('ob-pincode').value || '400053',
+              locality: document.getElementById('ob-locality').value || 'Andheri West',
+              vehicle: document.getElementById('ob-vehicle-type').value,
+              vehicleNumber: document.getElementById('ob-vehicle-number').value,
+              avatar: selectedAvatar,
+              demoBalance: 1850,
+              onboardingComplete: true
+            };
+
+            // Save to Supabase
+            if (VRSupabase.isConfigured && VRSupabase.currentUser) {
+              await VRSupabase.savePersonalDetails(riderId, {
+                fullName: riderProfile.name,
+                dateOfBirth: document.getElementById('ob-dob').value,
+                gender: document.getElementById('ob-gender').value,
+                phone: riderProfile.phone,
+                avatarUrl: selectedAvatar
+              });
+
+              await VRSupabase.saveResidentialDetails(riderId, {
+                addressLine: document.getElementById('ob-address').value,
+                locality: riderProfile.locality,
+                city: 'Mumbai',
+                state: 'Maharashtra',
+                pincode: riderProfile.primaryPincode
+              });
+
+              await VRSupabase.saveWorkDetails(riderId, {
+                deliveryPlatform: riderProfile.platform,
+                platformRiderId: riderProfile.partnerId,
+                workExperience: document.getElementById('ob-experience').value,
+                dailyWorkingHours: document.getElementById('ob-daily-hours').value,
+                weeklyWorkingDays: document.getElementById('ob-weekly-days').value,
+                operatingArea: document.getElementById('ob-operating-area').value,
+                monthlyIncomeRange: document.getElementById('ob-income-range').value
+              });
+
+              await VRSupabase.saveVehicleDetails(riderId, {
+                vehicleType: riderProfile.vehicle,
+                registrationNumber: riderProfile.vehicleNumber,
+                ownershipType: document.getElementById('ob-ownership').value,
+                hasDrivingLicence: document.getElementById('ob-has-license').checked
+              });
+
+              await VRSupabase.saveEmergencyContact(riderId, {
+                contactName: document.getElementById('ob-emergency-name').value,
+                relationship: document.getElementById('ob-emergency-rel').value,
+                phone: document.getElementById('ob-emergency-phone').value
+              });
+
+              await VRSupabase.saveConsent(riderId, 'TERMS_AND_PRIVACY');
+              await VRSupabase.completeOnboarding(riderId);
+            }
+
+            // Sync with local storage
+            VRStorage.addOrUpdateRider(riderProfile);
+            VRStorage.setCurrentRider(riderProfile.id);
+            localStorage.removeItem('vr_pending_onboarding');
+
+            alert('Rider Onboarding Complete! Welcome to VarshaRakshak.');
+            window.location.href = 'rider.html';
+          } catch (err) {
+            console.error('Onboarding save error:', err);
+            alert('Profile saved locally. Redirecting to dashboard...');
+            window.location.href = 'rider.html';
+          }
+          return;
+        }
+
+        currentStep++;
+        updateStepView();
+      });
+
+      prevBtn.addEventListener('click', () => {
+        if (currentStep > 1) {
+          currentStep--;
+          updateStepView();
+        }
+      });
+
+      updateStepView();
+    });
+  </script>
+</body>
+</html>

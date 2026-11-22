@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Official Supabase JS v2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>BAJAJ PROJECT PROTOTYPE:</strong> <span data-i18n="disclaimer_notice">All policies, premiums, weather events, and payouts are simulated demonstration data.</span></span>
+      </div>
+      <div class="badge badge-demo">SUPABASE AUTH</div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="index.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle" data-i18n="tagline">Smart Insurance for Every Delivery Rider</span>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Theme">🌙</button>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="dashboard-main" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 180px); padding: 2rem 1rem;">
+      <div class="card" style="max-width: 440px; width: 100%; padding: 2.25rem 2rem; box-shadow: var(--shadow-lg);">
+        <div style="text-align: center; margin-bottom: 1.75rem;">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🛵</div>
+          <h1 style="font-size: 1.65rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em;">Welcome Back</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem; line-height: 1.45;">
+            Sign in to access your active 7-day policy, safe routes, and automated parametric payouts.
+          </p>
+        </div>
+
+        <!-- Feedback Alert Box -->
+        <div id="login-feedback-box" style="display: none; padding: 0.75rem 1rem; border-radius: var(--border-radius-md); font-size: 0.85rem; margin-bottom: 1.25rem;"></div>
+
+        <form id="login-form" style="display: flex; flex-direction: column; gap: 1.15rem;">
+          <div>
+            <label for="login-email" style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+              Email Address
+            </label>
+            <input type="email" id="login-email" class="select-control" style="width: 100%; min-height: 42px;" placeholder="raju.sharma@example.com" required autocomplete="email">
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label for="login-password" style="font-size: 0.8rem; font-weight: 600; color: var(--text-main);">
+                Password
+              </label>
+              <a href="forgot-password.html" style="font-size: 0.775rem; color: var(--color-accent-cyan);">Forgot Password?</a>
+            </div>
+            <div style="position: relative;">
+              <input type="password" id="login-password" class="select-control" style="width: 100%; min-height: 42px; padding-right: 40px;" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" id="btn-toggle-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem;" title="Show/Hide Password">👁️</button>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.825rem; color: var(--text-muted);">
+            <input type="checkbox" id="login-remember" style="accent-color: var(--color-accent-blue); width: 16px; height: 16px; cursor: pointer;">
+            <label for="login-remember" style="cursor: pointer;">Remember this browser session</label>
+          </div>
+
+          <button type="submit" id="btn-login-submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;">
+            Sign In ➔
+          </button>
+        </form>
+
+        <!-- Hackathon One-Click Demo Access -->
+        <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--color-card-border); text-align: center;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; margin-bottom: 0.4rem;">
+            Demo Credentials (Prefill & Supabase Authenticate)
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.85rem; line-height: 1.4;">
+            Prefills official test credentials and completes real authentication via Supabase Auth without bypasses.
+          </p>
+          <div style="display: flex; gap: 0.65rem;">
+            <button type="button" id="btn-demo-rider-login" class="btn btn-outline btn-sm" style="flex: 1;">
+              🛵 Demo Rider
+            </button>
+            <button type="button" id="btn-demo-admin-login" class="btn btn-outline btn-sm" style="flex: 1;">
+              ⚡ Ops Admin
+            </button>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
+          Don't have an account? <a href="signup.html" style="color: var(--color-accent-cyan); font-weight: 600;">Sign up as a Rider</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. Supabase PostgreSQL authentication with Row Level Security.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype</div>
+    </footer>
+  </div>
+
+  <!-- Shared Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      VRSupabase.init();
+
+      // Check URL parameters for security notices
+      const urlParams = new URLSearchParams(window.location.search);
+      const authNotice = urlParams.get('auth');
+      const errorNotice = urlParams.get('error');
+      const loggedOut = urlParams.get('logged_out');
+      const returnUrl = urlParams.get('return') || sessionStorage.getItem('vr_auth_redirect');
+
+      const feedback = document.getElementById('login-feedback-box');
+      function showFeedback(msg, isError = true) {
+        feedback.style.display = 'block';
+        feedback.style.background = isError ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)';
+        feedback.style.color = isError ? '#f87171' : '#34d399';
+        feedback.style.border = `1px solid ${isError ? 'rgba(239, 68, 68, 0.35)' : 'rgba(16, 185, 129, 0.35)'}`;
+        feedback.textContent = msg;
+      }
+
+      if (loggedOut === 'true') {
+        showFeedback('✓ You have been signed out safely. Local session cleared.', false);
+      } else if (authNotice === 'required' || authNotice === 'session_missing') {
+        showFeedback('🔒 Protected dashboard. Please sign in to access your account.', true);
+      } else if (authNotice === 'token_expired') {
+        showFeedback('⏱️ Your session has expired. Please sign in again.', true);
+      } else if (errorNotice === 'unauthorized_admin_access') {
+        showFeedback('⛔ Access Denied: Administrator role required to view operations console.', true);
+      }
+
+      // Show/Hide password toggle
+      const toggleBtn = document.getElementById('btn-toggle-password');
+      const passInput = document.getElementById('login-password');
+      if (toggleBtn && passInput) {
+        toggleBtn.addEventListener('click', () => {
+          passInput.type = passInput.type === 'password' ? 'text' : 'password';
+        });
+      }
+
+      const form = document.getElementById('login-form');
+      const submitBtn = document.getElementById('btn-login-submit');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Authenticating with Supabase...';
+        feedback.style.display = 'none';
+
+        try {
+          const res = await VRSupabase.signIn(email, password);
+          showFeedback('✓ Authentication confirmed! Redirecting...', false);
+
+          // Role is strictly fetched from public.profiles database table
+          const role = (res.profile && res.profile.role) ? res.profile.role : 'RIDER';
+
+          sessionStorage.removeItem('vr_auth_redirect');
+
+          setTimeout(() => {
+            if (returnUrl && !returnUrl.includes('login.html') && !returnUrl.includes('logout')) {
+              const decoded = decodeURIComponent(returnUrl);
+              // Prevent non-admin from returning to admin.html
+              if (decoded.includes('admin.html') && role !== 'ADMIN') {
+                window.location.replace('rider.html');
+              } else {
+                window.location.replace(decoded);
+              }
+            } else if (role === 'ADMIN') {
+              window.location.replace('admin.html');
+            } else {
+              window.location.replace('rider.html');
+            }
+          }, 450);
+        } catch (err) {
+          showFeedback(err.message || 'Invalid email or password.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In ➔';
+        }
+      });
+
+      // Quick Demo Prefill Buttons (Fill credentials and let user click Sign In or auto-submit genuine Supabase Auth)
+      document.getElementById('btn-demo-rider-login').addEventListener('click', () => {
+        document.getElementById('login-email').value = 'raju.sharma@varsharakshak.demo';
+        document.getElementById('login-password').value = 'RiderPass2026!';
+        showFeedback('Prefilled Demo Rider credentials. Submitting to Supabase Auth...', false);
+        form.requestSubmit();
+      });
+
+      document.getElementById('btn-demo-admin-login').addEventListener('click', () => {
+        document.getElementById('login-email').value = 'admin@varsharakshak.com';
+        document.getElementById('login-password').value = 'AdminPass2026!';
+        showFeedback('Prefilled Demo Admin credentials. Submitting to Supabase Auth...', false);
+        form.requestSubmit();
+      });
+    });
+  </script>
+</body>
+</html>

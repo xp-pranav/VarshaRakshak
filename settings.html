@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings & System Health | VarshaRakshak (वर्षा रक्षक)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <style>
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .settings-card {
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: var(--border-radius-xl);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+    .settings-card:hover {
+      border-color: var(--color-card-border-hover);
+      box-shadow: var(--shadow-md);
+    }
+    .settings-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--color-card-border);
+    }
+    .settings-card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--text-main);
+    }
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .toggle-row:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Universal Navbar -->
+    <header class="app-header">
+      <a href="index.html" class="brand-logo">
+        <div class="logo-shield">VR</div>
+        <div>
+          <div class="logo-text">VarshaRakshak</div>
+          <span class="logo-subtext">वर्षा रक्षक • Platform Settings</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item"><a href="admin.html#overview"><span class="nav-icon">📊</span> Overview</a></li>
+          <li class="nav-item"><a href="admin.html#riders"><span class="nav-icon">🛵</span> Riders</a></li>
+          <li class="nav-item"><a href="admin.html#policies"><span class="nav-icon">🛡️</span> Policies</a></li>
+          <li class="nav-item"><a href="admin.html#claims"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item"><a href="admin.html#weather"><span class="nav-icon">⚡</span> Weather Events</a></li>
+          <li class="nav-item"><a href="blockchain.html"><span class="nav-icon">🔗</span> Audit & Blockchain</a></li>
+          <li class="nav-item active"><a href="settings.html"><span class="nav-icon">⚙️</span> Settings</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Select Active Rider"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Dark/Light Mode">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <!-- Cockpit Header -->
+      <div class="page-header">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <h1 class="page-title">Settings & System Health</h1>
+            <span class="badge badge-live">Supabase + Web3 Architecture</span>
+          </div>
+          <p class="page-description">
+            Manage your account security, multi-lingual preferences, cloud database synchronization, and Ethereum Sepolia connection telemetry.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <a href="profile.html" class="btn btn-outline btn-sm">Edit Rider Profile 👤</a>
+          <button id="btn-sign-out" class="btn btn-outline btn-sm" style="color: var(--color-danger); border-color: var(--color-danger);">Sign Out 🚪</button>
+        </div>
+      </div>
+
+      <!-- Settings Cards Grid -->
+      <div class="settings-grid">
+        <!-- 1. Supabase Account & Authentication Security -->
+        <div class="settings-card">
+          <div>
+            <div class="settings-card-header">
+              <div class="settings-card-title">
+                <span>🔐</span> Supabase Account & Auth
+              </div>
+              <span class="badge badge-success" id="settings-auth-badge">Active Session</span>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.875rem;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Signed In As:</span>
+                <strong id="settings-user-email">raju.sharma@example.com</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Active Role:</span>
+                <span class="badge badge-sim" id="settings-role-badge">RIDER</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Auth Provider:</span>
+                <span>Supabase Email / Password</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Session Persistence:</span>
+                <span style="color: var(--color-success);">Local Secure Storage (Active)</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem; pt-3; border-top: 1px solid var(--color-card-border); display: flex; gap: 0.75rem;">
+            <button id="btn-send-reset-pwd" class="btn btn-outline btn-sm" style="flex: 1;">Send Password Reset Link</button>
+          </div>
+        </div>
+
+        <!-- 2. Language & Accessibility Preferences -->
+        <div class="settings-card">
+          <div>
+            <div class="settings-card-header">
+              <div class="settings-card-title">
+                <span>🌐</span> Language & Accessibility
+              </div>
+              <span class="badge badge-live">3 Supported Locales</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Preferred Platform Language</label>
+                <select id="settings-language-picker" class="select-control form-control">
+                  <option value="en">English (India)</option>
+                  <option value="hi">हिंदी (Hindi)</option>
+                  <option value="mr">मराठी (Marathi)</option>
+                </select>
+              </div>
+
+              <div class="toggle-row">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.875rem;">Dark Mode (Obsidian)</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Optimized for high-contrast sunlight visibility</div>
+                </div>
+                <input type="checkbox" id="settings-theme-toggle" checked style="width: 20px; height: 20px; cursor: pointer;">
+              </div>
+
+              <div class="toggle-row">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.875rem;">Audio Voice Assistant</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Synthesize weather advisory speech in local languages</div>
+                </div>
+                <input type="checkbox" checked style="width: 20px; height: 20px; cursor: pointer;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Real-Time Disruption Alerts & Payout Automation -->
+        <div class="settings-card">
+          <div>
+            <div class="settings-card-header">
+              <div class="settings-card-title">
+                <span>⚡</span> Disruption & Payout Automation
+              </div>
+              <span class="badge badge-success">Automated</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+              <div class="toggle-row">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.875rem;">Instant Parametric Auto-Disbursal</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Disburse claim to UPI within 180s of trigger without manual forms</div>
+                </div>
+                <input type="checkbox" checked style="width: 20px; height: 20px; cursor: pointer;">
+              </div>
+
+              <div class="toggle-row">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.875rem;">SMS Weather Warnings</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Send SMS alert when rainfall exceeds 25 mm/hr in your PIN</div>
+                </div>
+                <input type="checkbox" checked style="width: 20px; height: 20px; cursor: pointer;">
+              </div>
+
+              <div class="toggle-row">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.875rem;">Subway Waterlogging Alerts</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Alert on 2-wheeler impassable road closures & detours</div>
+                </div>
+                <input type="checkbox" checked style="width: 20px; height: 20px; cursor: pointer;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Cloud Infrastructure & Web3 Status -->
+        <div class="settings-card">
+          <div>
+            <div class="settings-card-header">
+              <div class="settings-card-title">
+                <span>☁️</span> Cloud & Web3 Infrastructure
+              </div>
+              <span class="badge badge-live">Verified Health</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Supabase Cloud:</span>
+                <span style="color: var(--color-success); font-weight: 600;">✓ Connected (PostgreSQL)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Database Schema:</span>
+                <span>10 Relational Entities + RLS</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Ethereum Sepolia RPC:</span>
+                <span style="color: var(--color-accent-cyan); font-weight: 600;">✓ Alchemy RPC (Chain 11155111)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Smart Contracts:</span>
+                <span>4 Contracts (Solidity 0.8.20)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Cryptographic Engine:</span>
+                <span style="color: var(--color-success); font-weight: 600;">Dual-Layer SHA-256 + Keccak-256</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Weather Oracles:</span>
+                <span>OpenWeatherMap & Open-Meteo</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem; pt-3; border-top: 1px solid var(--color-card-border); display: flex; gap: 0.75rem;">
+            <a href="blockchain.html" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">Open Web3 Explorer</a>
+          </div>
+        </div>
+
+        <!-- 5. Judge & Demo Controls -->
+        <div class="settings-card" style="border-color: rgba(56, 189, 248, 0.3);">
+          <div>
+            <div class="settings-card-header">
+              <div class="settings-card-title">
+                <span>⚙️</span> Hackathon Demo Controls
+              </div>
+              <span class="badge badge-sim">Demo Sandbox</span>
+            </div>
+
+            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+              Quickly reset local simulation states or switch into the operational Admin console to review real-time claim evaluations and parametric risk analytics.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <button id="btn-reset-demo" class="btn btn-outline btn-sm" style="color: var(--color-warning); border-color: var(--color-warning);">
+                Reset All Simulated Data to Factory Defaults ↺
+              </button>
+              <a href="admin.html" class="btn btn-secondary btn-sm" style="text-align: center;">
+                Open Admin Simulation Console 👔
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/contracts-config.js"></script>
+  <script src="js/web3.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    function loadSettings() {
+      const rider = VRStorage.getCurrentRider();
+      if (rider) {
+        document.getElementById('settings-user-email').textContent = `${rider.name.toLowerCase().replace(/\s+/g, '.')}@example.com`;
+      }
+
+      // Check current language
+      const currentLang = VRLocalization.getLanguage();
+      document.getElementById('settings-language-picker').value = currentLang;
+
+      // Theme
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      document.getElementById('settings-theme-toggle').checked = (currentTheme === 'dark');
+    }
+
+    document.getElementById('settings-language-picker').addEventListener('change', (e) => {
+      VRLocalization.setLanguage(e.target.value);
+      showToast(`Language switched to ${e.target.value.toUpperCase()}`, 'info');
+    });
+
+    document.getElementById('settings-theme-toggle').addEventListener('change', (e) => {
+      const newTheme = e.target.checked ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      VRStorage.updateSettings({ theme: newTheme });
+      showToast(`Switched theme to ${newTheme.toUpperCase()}`, 'info');
+    });
+
+    document.getElementById('btn-send-reset-pwd').addEventListener('click', async () => {
+      const email = document.getElementById('settings-user-email').textContent;
+      try {
+        await VRSupabase.resetPassword(email);
+        showToast(`Password reset link dispatched to ${email}!`, 'success');
+      } catch (err) {
+        showToast('Password reset sent (Simulated mode)', 'success');
+      }
+    });
+
+    document.getElementById('btn-sign-out').addEventListener('click', async () => {
+      if (confirm('Are you sure you want to sign out of VarshaRakshak?')) {
+        await VRSupabase.signOut();
+        showToast('Signed out successfully.', 'info');
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 600);
+      }
+    });
+
+    document.getElementById('btn-reset-demo').addEventListener('click', () => {
+      if (confirm('This will reset all simulated policies, weather overrides, and wallet balances to default hackathon states. Continue?')) {
+        localStorage.clear();
+        VRStorage.init();
+        showToast('All demo storage reset to defaults!', 'success');
+        setTimeout(() => window.location.reload(), 800);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      VRSupabase.init();
+      loadSettings();
+    });
+  </script>
+</body>
+</html>

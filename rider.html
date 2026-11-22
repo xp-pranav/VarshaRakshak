@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rider Dashboard — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Ethers.js v6 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+</head>
+<body id="rider-dashboard-view">
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong data-i18n="demo_project_title">BAJAJ PROJECT PROTOTYPE:</strong> <span data-i18n="disclaimer_notice">Simulated parametric income protection demonstration for delivery riders.</span></span>
+      </div>
+      <div class="badge badge-demo" data-i18n="demo_badge">DEMO SIMULATION</div>
+    </div>
+
+    <!-- Apple-Inspired Minimal Navigation Bar -->
+    <header class="navbar">
+      <a href="rider.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle" data-i18n="tagline">Smart Insurance for Every Delivery Rider</span>
+        </div>
+      </a>
+
+      <!-- Simplified 4-Item Primary Rider Navigation -->
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item active"><a href="rider.html"><span class="nav-icon">🏠</span> Home</a></li>
+          <li class="nav-item"><a href="policies.html"><span class="nav-icon">🛡️</span> My Policy</a></li>
+          <li class="nav-item"><a href="claims.html"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item"><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Select Active Rider" style="display: none;"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Dark/Light Mode">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <!-- Rider Welcome & Status Banner -->
+      <div class="rider-cockpit-banner">
+        <div style="display: flex; align-items: center; gap: 1.15rem;">
+          <div id="rider-avatar-display" style="font-size: 2.25rem; background: var(--color-card-hover); border: 1px solid var(--color-card-border); width: 62px; height: 62px; border-radius: var(--border-radius-lg); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-xs);">
+            🛵
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+              <h1 class="page-title" style="margin-bottom: 0;" id="rider-name-display">Raju Sharma</h1>
+              <span class="badge badge-success">✓ Active Protection</span>
+              <span class="badge badge-live">Verified Partner</span>
+            </div>
+            <div class="page-description" id="rider-platform-display" style="margin-top: 0.25rem;">
+              Zomato Partner • ZOM-78219 • Operational Hub: PIN 400053
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <div style="text-align: right; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--color-card-border); padding: 0.45rem 1rem; border-radius: var(--border-radius-md);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;" data-i18n="demo_balance">Wallet Balance</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #38bdf8; font-variant-numeric: tabular-nums;" id="rider-balance-display">₹1,850</div>
+          </div>
+          <button id="btn-quick-rain-sim" class="btn btn-primary" title="Trigger a heavy rain event to demonstrate automated parametric payout">
+            Simulate Heavy Rain Event (68mm/hr) 🌧️
+          </button>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           CORE 4 QUESTIONS SECTION (Apple-Inspired Clear Hierarchy)
+           ==================================================================== -->
+      <div class="question-grid">
+        
+        <!-- QUESTION 1: What is my current insurance status? -->
+        <div class="question-card">
+          <div>
+            <div class="question-tag">
+              <span>🛡️ Question 1</span> • <span>Insurance Status</span>
+            </div>
+            <h2 class="question-title">What is my current insurance status?</h2>
+            <div id="rider-policy-card">
+              <!-- Dynamically populated with active policy details, coverage progress, and renewal -->
+            </div>
+          </div>
+        </div>
+
+        <!-- QUESTION 2: What is the current weather risk in my working area? -->
+        <div class="question-card">
+          <div>
+            <div class="question-tag">
+              <span>🌧️ Question 2</span> • <span>Weather Risk</span>
+            </div>
+            <h2 class="question-title">What is the weather risk in my area?</h2>
+            
+            <div style="display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+              <span class="question-lead-metric" id="weather-temp-val">28.5°C</span>
+              <span style="font-size: 1.15rem; font-weight: 600; color: var(--text-main);" id="weather-condition-val">Moderate Rain</span>
+              <span id="weather-alert-badge" class="badge badge-warning">Low Disruption Risk</span>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap;">
+              <span class="badge badge-sim" id="weather-pincode-badge">📍 Operational Hub: Andheri West (PIN 400053)</span>
+              <span class="badge badge-sim" id="weather-provider-badge">📡 Live: OpenWeatherMap</span>
+            </div>
+
+            <div class="question-subtext" id="weather-alert-desc">
+              Wet roads & reduced visibility across SV Road corridor. Rain is currently below the 35 mm/hr claim trigger threshold.
+            </div>
+
+            <!-- Weather Metrics Bar -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 0.75rem; margin-bottom: 1rem;">
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Rainfall Rate</div>
+                <strong style="font-size: 0.95rem; color: #38bdf8;" id="weather-rain-val">14.0 mm/hr</strong>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Humidity</div>
+                <strong style="font-size: 0.95rem; color: var(--text-main);" id="weather-humidity-val">88%</strong>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Wind Speed</div>
+                <strong style="font-size: 0.95rem; color: var(--text-main);" id="weather-wind-val">24 km/h</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="question-actions">
+            <a href="routes.html" class="btn btn-outline btn-sm">Safe Routes Map ↗</a>
+            <a href="weather.html" class="btn btn-outline btn-sm">Full Weather Radar ↗</a>
+          </div>
+        </div>
+
+        <!-- QUESTION 3: How much have I earned? -->
+        <div class="question-card">
+          <div>
+            <div class="question-tag">
+              <span>💰 Question 3</span> • <span>Earnings & Protection</span>
+            </div>
+            <h2 class="question-title">How much have I earned today?</h2>
+            
+            <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.35rem;">
+              <span class="question-lead-metric" id="stat-today-income">₹750</span>
+              <span style="font-size: 0.85rem; color: var(--text-muted);">earned from 11 deliveries</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 1rem; margin-bottom: 1rem;">
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 0.75rem;">
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Daily Average</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-main);" id="stat-avg-income">₹950</div>
+                <div style="font-size: 0.725rem; color: var(--color-success); margin-top: 0.15rem;">7-day logged history</div>
+              </div>
+
+              <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--border-radius-md); padding: 0.75rem;">
+                <div style="font-size: 0.75rem; color: var(--color-danger); font-weight: 600;">Est. Weather Disruption</div>
+                <div style="font-size: 1.15rem; font-weight: 700; color: var(--color-danger);" id="stat-disruption-loss">₹535</div>
+                <div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.15rem;">*Estimate: 4.0 hrs lost to rain</div>
+              </div>
+            </div>
+
+            <div style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.45;">
+              <strong>Parametric Safety Net:</strong> Up to ₹1,000/day automatic compensation if rainfall exceeds threshold.
+            </div>
+          </div>
+
+          <div class="question-actions">
+            <a href="income.html" class="btn btn-outline btn-sm">View Income Details ↗</a>
+            <a href="wallet.html" class="btn btn-outline btn-sm">Wallet & Payouts ↗</a>
+          </div>
+        </div>
+
+        <!-- QUESTION 4: What should I do next? -->
+        <div class="question-card">
+          <div>
+            <div class="question-tag">
+              <span>⚡ Question 4</span> • <span>Next Steps & Guidance</span>
+            </div>
+            <h2 class="question-title">What should I do next?</h2>
+
+            <div style="background: rgba(48, 209, 88, 0.08); border: 1px solid rgba(48, 209, 88, 0.25); border-radius: var(--border-radius-md); padding: 1rem; margin-bottom: 1rem;">
+              <div style="color: var(--color-success); font-weight: 700; font-size: 0.95rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                <span>✓</span> You are actively protected today.
+              </div>
+              <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+                Keep delivering safely. If heavy rain or flooding exceeds <strong>35 mm/hr</strong> in PIN 400053, VarshaRakshak will automatically approve and credit your compensation claim. <em>No manual claim filing is required.</em>
+              </div>
+            </div>
+
+            <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+              <strong>Recommended Action:</strong> Check safe navigation routes before entering flood-prone subway underpasses, or test the simulation below.
+            </div>
+          </div>
+
+          <div class="question-actions">
+            <a href="routes.html" class="btn btn-primary btn-sm">Open Safe Navigation →</a>
+            <a href="claims.html" class="btn btn-outline btn-sm">View Claims History ↗</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ====================================================================
+           SECONDARY CONTEXTUAL MODULES (Safe Routes & Voice Assistant)
+           ==================================================================== -->
+      <div class="grid-cols-2">
+        <!-- Safe Route Preview Map -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🗺️</span>
+              <span data-i18n="safe_routes_title">Safe Route & Hazard Avoidance</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span class="badge badge-demo">LIVE HAZARDS</span>
+              <a href="routes.html" class="btn btn-outline btn-sm">Full Map ↗</a>
+            </div>
+          </div>
+
+          <div class="map-container" id="rider-map" style="height: 280px; margin-bottom: 1rem; border-radius: var(--border-radius-md);"></div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--border-radius-md); padding: 0.75rem;">
+              <div style="color: var(--color-danger); font-weight: 700; font-size: 0.825rem; margin-bottom: 0.2rem;">
+                ❌ Milan Subway (88/100 Hazard)
+              </div>
+              <div style="font-size: 0.775rem; color: var(--text-muted);">
+                48cm severe waterlogging. High engine stall risk.
+              </div>
+            </div>
+
+            <div style="background: rgba(48, 209, 88, 0.08); border: 1px solid rgba(48, 209, 88, 0.2); border-radius: var(--border-radius-md); padding: 0.75rem;">
+              <div style="color: var(--color-success); font-weight: 700; font-size: 0.825rem; margin-bottom: 0.2rem;">
+                ✓ Link Road Corridor (12/100 Risk)
+              </div>
+              <div style="font-size: 0.775rem; color: var(--text-muted);">
+                Elevated corridor clear. Est. time: 14 mins.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Multilingual Voice Assistant -->
+        <div class="voice-widget-card card">
+          <div class="card-header" style="margin-bottom: 0.75rem;">
+            <div class="card-title">
+              <span>🎙️</span>
+              <span data-i18n="voice_assistant">Multilingual Voice Assistant</span>
+            </div>
+            <span class="badge badge-sim">Hindi • Marathi • English</span>
+          </div>
+
+          <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.45; margin-bottom: 1rem;">
+            Ask about weather alerts, waterlogging hazards, active policy status, or payout compensation in Hindi, Marathi, or English.
+          </p>
+
+          <div class="voice-mic-container" style="margin-bottom: 1rem;">
+            <button id="voice-mic-btn" class="mic-button" title="Click to speak (Hindi, Marathi, English)">
+              🎤
+            </button>
+          </div>
+
+          <div class="voice-transcript-box" id="voice-transcript" style="margin-bottom: 0.75rem;">
+            <span style="color: var(--text-dim);" data-i18n="voice_placeholder">
+              Speak or type below (e.g., "Aaj barish ka alert hai kya?", "हवामान कसे आहे?")
+            </span>
+          </div>
+
+          <div id="voice-response" style="display: none; background: rgba(14, 165, 233, 0.1); border: 1px solid var(--color-accent-blue); border-radius: var(--border-radius-md); padding: 0.85rem; font-size: 0.9rem; color: #bae6fd; margin-bottom: 0.75rem;"></div>
+
+          <form id="voice-text-form" style="display: flex; gap: 0.65rem;">
+            <input type="text" id="voice-text-input" class="select-control" style="flex: 1; min-height: 40px;" placeholder="Or type your query here...">
+            <button type="submit" class="btn btn-outline btn-sm" style="min-height: 40px; padding: 0 1.25rem;">Ask</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Recent Claims Quick View -->
+      <div class="card" style="margin-top: 1.75rem;">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📋</span>
+            <span data-i18n="claim_history">Recent Claims & Instant Payouts</span>
+          </div>
+          <a href="claims.html" class="btn btn-outline btn-sm">All Claims ↗</a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th data-i18n="claim_id">Claim ID</th>
+                <th data-i18n="event_type">Event Type</th>
+                <th data-i18n="amount">Amount</th>
+                <th data-i18n="status">Status</th>
+                <th>Verification</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="rider-claims-tbody">
+              <!-- Populated by rider.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Apple-Style Mobile Bottom Navigation Bar (Screens <= 768px) -->
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+      <a href="rider.html" class="mobile-bottom-nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+      </a>
+      <a href="policies.html" class="mobile-bottom-nav-item">
+        <span class="nav-icon">🛡️</span>
+        <span>My Policy</span>
+      </a>
+      <a href="claims.html" class="mobile-bottom-nav-item">
+        <span class="nav-icon">📋</span>
+        <span>Claims</span>
+      </a>
+      <a href="profile.html" class="mobile-bottom-nav-item">
+        <span class="nav-icon">👤</span>
+        <span>Profile</span>
+      </a>
+    </nav>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. All insurance policies, premium collections, coverage amounts, weather anomalies, and payouts are illustrative simulation data.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype • Ethereum Sepolia Web3 Simulation</div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/contracts-config.js"></script>
+  <script src="js/abis.js"></script>
+  <script src="js/policy-hasher.js"></script>
+  <script src="js/web3.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/waterlogging.js"></script>
+  <script src="js/routes.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/fraud.js"></script>
+  <script src="js/claims.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/rider.js"></script>
+</body>
+</html>

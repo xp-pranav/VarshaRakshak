@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Insurance Plans & Calculator — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Ethers.js v6 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>WEEKLY PARAMETRIC INSURANCE:</strong> Affordable 7-day weather protection for gig riders priced at ₹49, ₹69 and ₹99 per week underwritten on Ethereum Sepolia.</span>
+      </div>
+      <div class="badge badge-demo">7-DAY POLICIES</div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="index.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle" data-i18n="tagline">Smart Insurance for Every Delivery Rider</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item"><a href="rider.html"><span class="nav-icon">🏠</span> Home</a></li>
+          <li class="nav-item active"><a href="policies.html"><span class="nav-icon">🛡️</span> My Policy</a></li>
+          <li class="nav-item"><a href="claims.html"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item"><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Active Rider"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Dark/Light Mode">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Weekly Parametric Insurance Plans (7-Day Coverage)</h1>
+          <div class="page-description">
+            Affordable micro-insurance starting at ₹49/week with automated weather triggers, zero claim paperwork, and direct wallet settlements.
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+          <span class="badge badge-success">WEEKLY SUBSCRIPTION MODEL</span>
+          <span class="badge badge-sim">₹49 - ₹99 / WEEK</span>
+        </div>
+      </div>
+
+      <!-- Active Policy & Renewal Card (Dynamic) -->
+      <div id="active-policy-status-container" class="card" style="margin-bottom: 2rem; border-color: rgba(56, 189, 248, 0.35); background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(16, 185, 129, 0.04));">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Weekly Plans Marketplace Grid -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.35rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: var(--text-main);">
+          <span>🛡️</span>
+          <span>Choose Your Weekly Plan</span>
+        </h2>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Strict 7-day policy validity window</span>
+      </div>
+
+      <div class="grid-cols-3" style="margin-bottom: 2.25rem;">
+        <!-- Plan 1: Basic (₹49/week) -->
+        <div class="card" style="border-top: 4px solid #0284c7; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+              <span class="badge badge-sim">RAINFALL SHIELD</span>
+              <span style="font-size: 1.45rem; font-weight: 800; color: #38bdf8; font-variant-numeric: tabular-nums;">₹49 <small style="font-size:0.75rem; font-weight:400; color:var(--text-muted);">/ week</small></span>
+            </div>
+
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">
+              Basic Weekly Shield
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.45; margin-bottom: 1.15rem;">
+              Essential parametric rainfall protection. Covers wage loss when rainfall exceeds <strong>35 mm/hr</strong> in your delivery hub PIN code.
+            </p>
+
+            <div style="background: var(--color-card-hover); padding: 0.85rem 1rem; border-radius: var(--border-radius-md); font-size: 0.825rem; display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.15rem; border: 1px solid var(--color-card-border);">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Policy Duration:</span>
+                <strong>7 Days (Weekly)</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Max Daily Benefit:</span>
+                <strong>₹800 / day</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Total 7-Day Coverage:</span>
+                <strong>₹2,500</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Trigger Threshold:</span>
+                <strong style="color: #38bdf8;">≥ 35 mm/hr for 60m</strong>
+              </div>
+            </div>
+
+            <ul style="font-size: 0.825rem; color: var(--text-muted); padding-left: 1.25rem; margin-bottom: 1.25rem; line-height: 1.6;">
+              <li>Rainfall protection (≥35 mm/hr)</li>
+              <li>Basic waterlogging road alerts</li>
+              <li>Standard automated claim evaluation</li>
+              <li>Waiting period: 2 hours from purchase</li>
+            </ul>
+          </div>
+
+          <button class="btn btn-primary btn-sm btn-purchase-plan" data-plan-id="plan-basic" style="width: 100%; min-height: 40px;">
+            Activate Basic Plan (₹49/week)
+          </button>
+        </div>
+
+        <!-- Plan 2: Standard (₹69/week) -->
+        <div class="card" style="border-top: 4px solid #10b981; display: flex; flex-direction: column; justify-content: space-between; position: relative; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);">
+          <div style="position: absolute; top: 12px; right: 14px; background: #10b981; color: #042f2e; font-size: 0.675rem; font-weight: 800; padding: 2px 8px; border-radius: var(--border-radius-full); text-transform: uppercase; letter-spacing: 0.04em;">
+            Most Popular
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+              <span class="badge badge-success">MULTI-HAZARD SHIELD</span>
+            </div>
+            <div style="margin-bottom: 0.65rem;">
+              <span style="font-size: 1.45rem; font-weight: 800; color: #34d399; font-variant-numeric: tabular-nums;">₹69 <small style="font-size:0.75rem; font-weight:400; color:var(--text-muted);">/ week</small></span>
+            </div>
+
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">
+              Standard Weekly Shield
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.45; margin-bottom: 1.15rem;">
+              Multi-hazard protection including heavy rainfall, severe cloudbursts, and dangerous summer heatwaves / winter coldwaves.
+            </p>
+
+            <div style="background: var(--color-card-hover); padding: 0.85rem 1rem; border-radius: var(--border-radius-md); font-size: 0.825rem; display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.15rem; border: 1px solid var(--color-card-border);">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Policy Duration:</span>
+                <strong>7 Days (Weekly)</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Max Daily Benefit:</span>
+                <strong>₹1,500 / day</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Total 7-Day Coverage:</span>
+                <strong>₹5,000</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Trigger Threshold:</span>
+                <strong style="color: #34d399;">Rain ≥35mm/hr | Heat ≥42°C | Cold ≤5°C</strong>
+              </div>
+            </div>
+
+            <ul style="font-size: 0.825rem; color: var(--text-muted); padding-left: 1.25rem; margin-bottom: 1.25rem; line-height: 1.6;">
+              <li>All Basic plan features</li>
+              <li>Extreme heatwave protection (≥42°C)</li>
+              <li>Winter coldwave protection (≤5°C)</li>
+              <li>Higher coverage limit: ₹5,000/week</li>
+              <li>Waiting period: 1 hour only</li>
+            </ul>
+          </div>
+
+          <button class="btn btn-success btn-sm btn-purchase-plan" data-plan-id="plan-standard" style="width: 100%; min-height: 40px;">
+            Activate Standard Plan (₹69/week)
+          </button>
+        </div>
+
+        <!-- Plan 3: Premium (₹99/week) -->
+        <div class="card" style="border-top: 4px solid #f97316; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+              <span class="badge badge-warning">MAXIMUM PROTECTION</span>
+              <span style="font-size: 1.45rem; font-weight: 800; color: #fb923c; font-variant-numeric: tabular-nums;">₹99 <small style="font-size:0.75rem; font-weight:400; color:var(--text-muted);">/ week</small></span>
+            </div>
+
+            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">
+              Premium Weekly Shield
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.45; margin-bottom: 1.15rem;">
+              Maximum weekly protection with street waterlogging triggers, highest coverage limit, priority settlement queue, and instant activation.
+            </p>
+
+            <div style="background: var(--color-card-hover); padding: 0.85rem 1rem; border-radius: var(--border-radius-md); font-size: 0.825rem; display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.15rem; border: 1px solid var(--color-card-border);">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Policy Duration:</span>
+                <strong>7 Days (Weekly)</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Max Daily Benefit:</span>
+                <strong>₹2,500 / day</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Total 7-Day Coverage:</span>
+                <strong>₹8,000</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Trigger Threshold:</span>
+                <strong style="color: #fb923c;">All Hazards + Waterlogging ≥25cm</strong>
+              </div>
+            </div>
+
+            <ul style="font-size: 0.825rem; color: var(--text-muted); padding-left: 1.25rem; margin-bottom: 1.25rem; line-height: 1.6;">
+              <li>All Standard plan features</li>
+              <li>Highest coverage limit: ₹8,000/week</li>
+              <li>Street waterlogging depth trigger (≥25cm)</li>
+              <li>Priority claim review & settlement queue</li>
+              <li>Instant activation (0 waiting period)</li>
+            </ul>
+          </div>
+
+          <button class="btn btn-primary btn-sm btn-purchase-plan" data-plan-id="plan-premium" style="width: 100%; min-height: 40px; background: linear-gradient(180deg, #ea580c 0%, #c2410c 100%); border-color: #ea580c;">
+            Activate Premium Plan (₹99/week)
+          </button>
+        </div>
+      </div>
+
+      <!-- Plan Comparison Table -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📊</span>
+            <span>Weekly Plan Feature & Benefits Comparison</span>
+          </div>
+          <span class="badge badge-sim">MVP PRICING: ₹49 – ₹99</span>
+        </div>
+
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Plan Feature</th>
+                <th>Basic (₹49/week)</th>
+                <th>Standard (₹69/week)</th>
+                <th>Premium (₹99/week)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Weekly Premium</strong></td>
+                <td><strong>₹49</strong></td>
+                <td><strong style="color: #34d399;">₹69</strong></td>
+                <td><strong style="color: #fb923c;">₹99</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Policy Duration</strong></td>
+                <td>7 Days</td>
+                <td>7 Days</td>
+                <td>7 Days</td>
+              </tr>
+              <tr>
+                <td><strong>Total Weekly Coverage Cap</strong></td>
+                <td>₹2,500</td>
+                <td>₹5,000</td>
+                <td>₹8,000</td>
+              </tr>
+              <tr>
+                <td><strong>Maximum Daily Benefit</strong></td>
+                <td>₹800 / day</td>
+                <td>₹1,500 / day</td>
+                <td>₹2,500 / day</td>
+              </tr>
+              <tr>
+                <td><strong>Heavy Rainfall Trigger (≥35 mm/hr)</strong></td>
+                <td style="color: var(--color-success);">✓ Included</td>
+                <td style="color: var(--color-success);">✓ Included</td>
+                <td style="color: var(--color-success);">✓ Included</td>
+              </tr>
+              <tr>
+                <td><strong>Torrential Cloudburst (≥55 mm/hr)</strong></td>
+                <td style="color: var(--text-dim);">✗ Excluded</td>
+                <td style="color: var(--color-success);">✓ Included</td>
+                <td style="color: var(--color-success);">✓ Included</td>
+              </tr>
+              <tr>
+                <td><strong>Extreme Heatwave (≥42°C)</strong></td>
+                <td style="color: var(--text-dim);">✗ Excluded</td>
+                <td style="color: var(--color-success);">✓ Included</td>
+                <td style="color: var(--color-success);">✓ Included</td>
+              </tr>
+              <tr>
+                <td><strong>Severe Winter Coldwave (≤5°C)</strong></td>
+                <td style="color: var(--text-dim);">✗ Excluded</td>
+                <td style="color: var(--color-success);">✓ Included</td>
+                <td style="color: var(--color-success);">✓ Included</td>
+              </tr>
+              <tr>
+                <td><strong>Waterlogging Depth Trigger (≥25cm)</strong></td>
+                <td style="color: var(--text-dim);">Road alerts only</td>
+                <td style="color: var(--text-dim);">Road alerts only</td>
+                <td style="color: var(--color-success);">✓ Direct Payout Trigger</td>
+              </tr>
+              <tr>
+                <td><strong>Waiting Period</strong></td>
+                <td>2 Hours</td>
+                <td>1 Hour</td>
+                <td>Instant (0 Hours)</td>
+              </tr>
+              <tr>
+                <td><strong>Settlement Priority</strong></td>
+                <td>Standard Queue</td>
+                <td>Standard Queue</td>
+                <td><span class="badge badge-warning">Priority Fast-Track</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Interactive Payout Calculator Section -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🧮</span>
+            <span data-i18n="payout_calculator">Policy-Based Payout Calculator</span>
+          </div>
+          <span class="badge badge-demo">WEEKLY POLICY SIMULATOR</span>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; line-height: 1.5;">
+          Estimate potential compensation for hypothetical weather disruptions based on your active weekly policy terms.
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem;">
+          <!-- Controls Column -->
+          <div style="display: flex; flex-direction: column; gap: 1.15rem;">
+            <div>
+              <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; font-weight: 500;">Event Type</label>
+              <select id="calc-event-type" class="select-control" style="width: 100%; min-height: 42px;">
+                <option value="HEAVY_RAIN">Heavy Rainfall (All Plans: ≥ 35 mm/hr)</option>
+                <option value="EXTREME_RAIN">Torrential Deluge (Standard & Premium: ≥ 55 mm/hr)</option>
+                <option value="EXTREME_HEAT">Summer Heatwave (Standard & Premium: ≥ 42°C)</option>
+                <option value="EXTREME_COLD">Winter Coldwave (Standard & Premium: ≤ 5°C)</option>
+                <option value="SEVERE_WATERLOGGING">Severe Waterlogging (Premium Only: ≥ 25 cm)</option>
+              </select>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.825rem; margin-bottom: 0.35rem;">
+                <span style="color: var(--text-muted);" id="calc-intensity-label">Rainfall Rate (mm/hr)</span>
+                <strong id="calc-intensity-val" style="font-variant-numeric: tabular-nums;">45 mm/hr</strong>
+              </div>
+              <input type="range" id="calc-intensity-range" min="10" max="100" value="45" step="1">
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.825rem; margin-bottom: 0.35rem;">
+                <span style="color: var(--text-muted);">Disruption Duration (Hours)</span>
+                <strong id="calc-duration-val" style="font-variant-numeric: tabular-nums;">3.0 Hours</strong>
+              </div>
+              <input type="range" id="calc-duration-range" min="1" max="8" value="3" step="0.5">
+            </div>
+
+            <div>
+              <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; font-weight: 500;">Event Postal PIN</label>
+              <input type="text" id="calc-pincode" class="select-control" style="width: 100%; min-height: 40px;" value="400053">
+            </div>
+          </div>
+
+          <!-- Result Breakdown Column -->
+          <div>
+            <div class="calc-breakdown-card" id="calc-result-box">
+              <div style="font-size: 0.825rem; color: var(--text-muted); font-weight: 500;" data-i18n="estimated_payout">Estimated Compensation</div>
+              <div style="font-size: 2.4rem; font-weight: 800; color: var(--color-accent-cyan); margin: 0.25rem 0; font-variant-numeric: tabular-nums;" id="calc-payout-total">₹750</div>
+
+              <div id="calc-breakdown-details" style="margin-top: 0.85rem; border-top: 1px dashed rgba(56, 189, 248, 0.3); padding-top: 0.85rem;">
+                <div class="calc-row">
+                  <span style="color: var(--text-muted);">Threshold Criteria:</span>
+                  <span id="calc-breakdown-threshold" style="color: var(--color-success); font-weight:600;">Breached (≥ 35 mm/hr)</span>
+                </div>
+                <div class="calc-row">
+                  <span style="color: var(--text-muted);">Benchmark Hourly Rate:</span>
+                  <span id="calc-breakdown-rate">₹250 / hr</span>
+                </div>
+                <div class="calc-row">
+                  <span style="color: var(--text-muted);">Severity Multiplier:</span>
+                  <span id="calc-breakdown-mult">1.0x</span>
+                </div>
+                <div class="calc-row">
+                  <span style="color: var(--text-muted);">Weekly Remaining Cap:</span>
+                  <span id="calc-breakdown-cap">₹4,250</span>
+                </div>
+              </div>
+
+              <p style="font-size: 0.775rem; color: var(--text-dim); margin-top: 0.85rem; line-height: 1.45;" data-i18n="calculator_disclaimer">
+                Calculated amounts are illustrative estimates under your 7-day weekly policy terms.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. All insurance policies, premium collections, coverage amounts, weather anomalies, and payouts are illustrative simulation data.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype • Ethereum Sepolia Web3 Simulation</div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/contracts-config.js"></script>
+  <script src="js/abis.js"></script>
+  <script src="js/policy-hasher.js"></script>
+  <script src="js/web3.js"></script>
+  <script src="js/insurance.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Render Active Policy Card
+      function renderActivePolicyCard() {
+        const container = document.getElementById('active-policy-status-container');
+        if (!container) return;
+
+        const policy = VRInsurance.getActivePolicyForCurrentRider();
+
+        if (!policy) {
+          container.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <div style="font-size: 0.775rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em;">Active Weekly Policy Status</div>
+                <h3 style="font-size: 1.3rem; font-weight: 700; color: #ef4444; margin-top: 0.2rem;">No Active Weekly Policy</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                  Protect your daily income from weather disruptions. Choose a plan below to activate 7 days of coverage.
+                </p>
+              </div>
+              <span class="badge badge-danger">UNPROTECTED</span>
+            </div>
+          `;
+          return;
+        }
+
+        const validity = VRInsurance.getPolicyValidity(policy);
+        const activationStr = new Date(policy.activationDate || policy.startDate).toLocaleDateString();
+        const expiryStr = new Date(policy.expiryDate).toLocaleDateString();
+        const pctRemaining = Math.round((policy.coverageLimitRemaining / policy.totalCoverageLimit) * 100);
+
+        container.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <div style="font-size: 0.775rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em;">Active 7-Day Weekly Policy</div>
+              <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--color-accent-cyan); margin-top: 0.15rem;">
+                ${policy.planName} (₹${policy.premiumPaid}/week)
+              </h3>
+              <div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.2rem;">
+                Policy #${policy.policyNumber} • Zone PIN ${policy.pincode} • Underwritten on Sepolia Testnet
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span class="badge ${validity.badgeClass}">${validity.label}</span>
+              <span class="badge badge-success">${policy.status}</span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; background: var(--color-card-bg); padding: 1rem; border-radius: var(--border-radius-md); border: 1px solid var(--color-card-border);">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Remaining Weekly Cap</div>
+              <div style="font-size: 1.3rem; font-weight: 700; color: var(--color-success); font-variant-numeric: tabular-nums;">
+                ₹${policy.coverageLimitRemaining.toLocaleString()} <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">/ ₹${policy.totalCoverageLimit.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Coverage Window (7 Days)</div>
+              <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">
+                ${activationStr} ➔ ${expiryStr}
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Max Daily Benefit</div>
+              <div style="font-size: 0.95rem; font-weight: 600; color: var(--color-accent-cyan); font-variant-numeric: tabular-nums;">
+                ₹${policy.maxDailyCoverage || 1500} / day
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: flex-end;">
+              ${validity.isRenewalEligible || validity.isExpired ? `
+                <button id="btn-renew-policy" class="btn btn-primary btn-sm" style="background: #10b981; border-color: #10b981;">
+                  ↻ Renew Policy (₹${policy.premiumPaid}/wk)
+                </button>
+              ` : `
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Renewal opens in last 48h</span>
+              `}
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.35rem;">
+              <span style="color: var(--text-muted);">Weekly Coverage Remaining: ${pctRemaining}%</span>
+              <span style="color: var(--text-muted); font-variant-numeric: tabular-nums;">₹${policy.coverageLimitRemaining} available</span>
+            </div>
+            <div style="height: 6px; width: 100%; background: var(--color-card-border); border-radius: 3px; overflow: hidden;">
+              <div style="width: ${pctRemaining}%; height: 100%; background: linear-gradient(90deg, #0284c7, #10b981);"></div>
+            </div>
+          </div>
+        `;
+
+        const renewBtn = document.getElementById('btn-renew-policy');
+        if (renewBtn) {
+          renewBtn.addEventListener('click', async () => {
+            try {
+              renewBtn.disabled = true;
+              renewBtn.textContent = 'Renewing 7 Days...';
+              const renewed = await VRInsurance.renewPolicy(policy.id);
+              showToast(`Policy renewed! New 7-day period active until ${new Date(renewed.expiryDate).toLocaleDateString()}`, 'success');
+              renderActivePolicyCard();
+            } catch (err) {
+              showToast(err.message, 'warning');
+              renewBtn.disabled = false;
+              renewBtn.textContent = '↻ Renew Policy';
+            }
+          });
+        }
+      }
+
+      renderActivePolicyCard();
+      window.addEventListener('vr:policy_added', renderActivePolicyCard);
+      window.addEventListener('vr:policy_renewed', renderActivePolicyCard);
+      window.addEventListener('vr:rider_changed', renderActivePolicyCard);
+
+      // 2. Calculator Controls
+      const typeSelect = document.getElementById('calc-event-type');
+      const intensityRange = document.getElementById('calc-intensity-range');
+      const intensityVal = document.getElementById('calc-intensity-val');
+      const intensityLabel = document.getElementById('calc-intensity-label');
+      const durationRange = document.getElementById('calc-duration-range');
+      const durationVal = document.getElementById('calc-duration-val');
+      const pincodeInput = document.getElementById('calc-pincode');
+
+      function updateCalculator() {
+        const eventType = typeSelect.value;
+        let intensity = Number(intensityRange.value);
+        const duration = Number(durationRange.value);
+        const pincode = pincodeInput.value;
+
+        if (eventType === 'EXTREME_HEAT') {
+          intensityLabel.textContent = "Ambient Temperature (°C)";
+          intensityRange.min = 35;
+          intensityRange.max = 50;
+          if (intensity < 35) intensity = 43;
+          intensityVal.textContent = `${intensity}°C`;
+        } else if (eventType === 'EXTREME_COLD') {
+          intensityLabel.textContent = "Ambient Temperature (°C)";
+          intensityRange.min = 0;
+          intensityRange.max = 15;
+          if (intensity > 15) intensity = 4;
+          intensityVal.textContent = `${intensity}°C`;
+        } else if (eventType === 'SEVERE_WATERLOGGING') {
+          intensityLabel.textContent = "Water Depth (cm)";
+          intensityRange.min = 10;
+          intensityRange.max = 80;
+          if (intensity < 10) intensity = 35;
+          intensityVal.textContent = `${intensity} cm`;
+        } else {
+          intensityLabel.textContent = "Rainfall Rate (mm/hr)";
+          intensityRange.min = 10;
+          intensityRange.max = 100;
+          intensityVal.textContent = `${intensity} mm/hr`;
+        }
+
+        durationVal.textContent = `${duration.toFixed(1)} Hours`;
+
+        const policy = VRInsurance.getActivePolicyForCurrentRider();
+        const res = VRCalculator.evaluatePayout(policy, eventType, intensity, duration, pincode);
+
+        const totalEl = document.getElementById('calc-payout-total');
+        const thresholdEl = document.getElementById('calc-breakdown-threshold');
+        const rateEl = document.getElementById('calc-breakdown-rate');
+        const multEl = document.getElementById('calc-breakdown-mult');
+        const capEl = document.getElementById('calc-breakdown-cap');
+
+        if (res.eligible) {
+          totalEl.textContent = `₹${res.estimatedPayout}`;
+          totalEl.style.color = "var(--color-accent-cyan)";
+          thresholdEl.textContent = "Breached (Eligible)";
+          thresholdEl.style.color = "var(--color-success)";
+          rateEl.textContent = `₹${res.breakdown.baseHourlyRate} / hr`;
+          multEl.textContent = `${res.breakdown.severityMultiplier}x`;
+          capEl.textContent = `₹${res.breakdown.remainingPolicyCoverage}`;
+        } else {
+          totalEl.textContent = `₹0 (Not Eligible)`;
+          totalEl.style.color = "var(--color-danger)";
+          thresholdEl.textContent = res.reason;
+          thresholdEl.style.color = "var(--color-danger)";
+        }
+      }
+
+      typeSelect.addEventListener('change', updateCalculator);
+      intensityRange.addEventListener('input', updateCalculator);
+      durationRange.addEventListener('input', updateCalculator);
+      pincodeInput.addEventListener('input', updateCalculator);
+
+      updateCalculator();
+
+      // 3. Weekly Policy Purchase Buttons
+      const purchaseButtons = document.querySelectorAll('.btn-purchase-plan');
+      purchaseButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const planId = e.currentTarget.getAttribute('data-plan-id');
+          btn.disabled = true;
+          const origText = btn.textContent;
+          btn.textContent = "Activating 7-Day Policy...";
+
+          try {
+            const policy = await VRInsurance.purchasePolicy(planId, "400053");
+            showToast(`7-Day ${policy.planName} activated for ₹${policy.premiumPaid}! Valid until ${new Date(policy.expiryDate).toLocaleDateString()}`, 'success');
+            renderActivePolicyCard();
+            updateCalculator();
+            btn.textContent = "Policy Active ✓";
+            setTimeout(() => {
+              btn.disabled = false;
+              btn.textContent = origText;
+            }, 2500);
+          } catch (err) {
+            showToast(err.message, 'warning');
+            btn.disabled = false;
+            btn.textContent = origText;
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blockchain Explorer — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Ethers.js v6 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>BLOCKCHAIN EXPLORER:</strong> Verify smart contract state on Ethereum Sepolia Testnet. Zero PII stored on-chain.</span>
+      </div>
+      <div id="current-mode-badge" class="badge badge-sim">Simulation Mode</div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="index.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle" data-i18n="tagline">Smart Insurance for Every Delivery Rider</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item"><a href="admin.html#overview"><span class="nav-icon">📊</span> Overview</a></li>
+          <li class="nav-item"><a href="admin.html#riders"><span class="nav-icon">🛵</span> Riders</a></li>
+          <li class="nav-item"><a href="admin.html#policies"><span class="nav-icon">🛡️</span> Policies</a></li>
+          <li class="nav-item"><a href="admin.html#claims"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item"><a href="admin.html#weather"><span class="nav-icon">⚡</span> Weather Events</a></li>
+          <li class="nav-item active"><a href="blockchain.html"><span class="nav-icon">🔗</span> Audit & Blockchain</a></li>
+          <li class="nav-item"><a href="settings.html"><span class="nav-icon">⚙️</span> Settings</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Active Rider"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Theme">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Ethereum Sepolia Web3 & Blockchain Explorer</h1>
+          <div class="page-description">
+            Audit non-repudiable policy registrations, weather trigger hashes, and payout authorization receipts.
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <button id="mode-toggle-btn" class="btn btn-outline">Switch to Live Sepolia Mode</button>
+          <button id="connect-wallet-btn" class="btn btn-primary">Connect MetaMask</button>
+        </div>
+      </div>
+
+      <!-- Network & Wallet Info Box -->
+      <div class="card" style="margin-bottom: 1.75rem; background: linear-gradient(135deg, #0c1833 0%, #0e2448 100%); border-color: rgba(56, 189, 248, 0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+          <div>
+            <div style="font-size: 0.775rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em;">Network Verification</div>
+            <div style="font-size: 1.35rem; font-weight: 700; color: #38bdf8; margin-top: 0.15rem;">Ethereum Sepolia Testnet (ChainID: 11155111)</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.35rem;">
+              Public Block Explorer: <a href="https://sepolia.etherscan.io" target="_blank" rel="noopener noreferrer" style="color: var(--color-accent-cyan);">https://sepolia.etherscan.io ↗</a>
+            </div>
+          </div>
+
+          <div style="text-align: right; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--color-card-border); padding: 0.65rem 1.15rem; border-radius: var(--border-radius-md);">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">MetaMask Wallet State</div>
+            <div id="wallet-address-display" style="font-size: 0.95rem; color: var(--text-main); font-family: var(--font-mono); margin-top: 0.25rem;">
+              <span class="status-dot warning"></span> Disconnected (Simulation Active)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE API CONNECTIONS & TELEMETRY HEALTH BAR -->
+      <div class="card" style="margin-bottom: 1.75rem; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.03);">
+        <div class="card-header" style="margin-bottom: 0.85rem;">
+          <div class="card-title">
+            <span>⚡</span>
+            <span>Live External APIs & Telemetry Integrations</span>
+          </div>
+          <button id="btn-refresh-apis" class="btn btn-outline btn-sm">
+            ↻ Test Live APIs
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          <!-- Alchemy Sepolia RPC Card -->
+          <div style="background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 1.15rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="font-size: 0.95rem;">Alchemy Sepolia RPC</strong>
+              <span id="api-status-alchemy" class="badge badge-success">🟢 Connected</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">eth-sepolia.g.alchemy.com/v2/...</div>
+            <div style="font-size: 0.85rem; margin-top: 0.4rem; color: #38bdf8; font-variant-numeric: tabular-nums;" id="api-metric-alchemy">Checking block...</div>
+          </div>
+
+          <!-- Etherscan V2 API Card -->
+          <div style="background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 1.15rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="font-size: 0.95rem;">Etherscan V2 API</strong>
+              <span id="api-status-etherscan" class="badge badge-success">🟢 Verified</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">Key: JDZPVESXFWMR...9459</div>
+            <div style="font-size: 0.85rem; margin-top: 0.4rem; color: #38bdf8; font-variant-numeric: tabular-nums;" id="api-metric-etherscan">Chain ID: 11155111</div>
+          </div>
+
+          <!-- OpenWeatherMap Live API Card -->
+          <div style="background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 1.15rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="font-size: 0.95rem;">OpenWeatherMap Live API</strong>
+              <span id="api-status-weather" class="badge badge-success">🟢 Active (200 OK)</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">Key: 629ebc92d8...5224</div>
+            <div style="font-size: 0.85rem; margin-top: 0.4rem; color: #34d399; font-variant-numeric: tabular-nums;" id="api-metric-weather">Ingesting telemetry...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISUAL ON-CHAIN VS OFF-CHAIN ARCHITECTURE DIAGRAM -->
+      <div class="card" style="margin-bottom: 1.75rem;">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🛡️</span>
+            <span>Hybrid Architecture: On-Chain vs Off-Chain Data Separation</span>
+          </div>
+          <span class="badge badge-sim">PRIVACY PRESERVING</span>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem; line-height: 1.5;">
+          To comply with data privacy standards (GDPR & DPDP Act) and gas optimization, VarshaRakshak maintains strict separation between immutable public smart contracts and encrypted off-chain application storage.
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <!-- ON-CHAIN COLUMN -->
+          <div style="background: rgba(14, 165, 233, 0.06); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--border-radius-md); padding: 1.35rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem;">
+              <span style="font-size: 1.35rem;">⛓️</span>
+              <h3 style="font-size: 1.05rem; font-weight: 700; color: #38bdf8;">ON-CHAIN (Ethereum Sepolia Ledger)</h3>
+            </div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.85rem;">
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-success); font-weight: 700;">✓</span>
+                <span><strong>Policy Terms Hashes:</strong> 256-bit Keccak hashes of immutable underwriting terms</span>
+              </li>
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-success); font-weight: 700;">✓</span>
+                <span><strong>Pseudonymous Rider IDs:</strong> One-way cryptographic hash of delivery partner IDs</span>
+              </li>
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-success); font-weight: 700;">✓</span>
+                <span><strong>Weather Anomaly Attestation:</strong> Oracle-submitted rainfall & temperature breach proofs</span>
+              </li>
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-success); font-weight: 700;">✓</span>
+                <span><strong>Claim Lifecycle State:</strong> Duplicate prevention map & immutable decision records</span>
+              </li>
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-success); font-weight: 700;">✓</span>
+                <span><strong>Payout Authorizations:</strong> Public settlement receipts verifiable on Etherscan</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- OFF-CHAIN COLUMN -->
+          <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--border-radius-md); padding: 1.35rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem;">
+              <span style="font-size: 1.35rem;">🔒</span>
+              <h3 style="font-size: 1.05rem; font-weight: 700; color: #34d399;">OFF-CHAIN (Encrypted Local Storage / DB)</h3>
+            </div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.85rem;">
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-danger); font-weight: 700;">✗</span>
+                <span><strong>Personal Identifying Information:</strong> Rider full names, phone numbers & contact info</span>
+              </li>
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-danger); font-weight: 700;">✗</span>
+                <span><strong>Earnings Records:</strong> Daily gross wages, delivery trip counts, and platform tips</span>
+              </li>
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-danger); font-weight: 700;">✗</span>
+                <span><strong>Real-time Telemetry:</strong> GPS breadcrumb coordinates, routes & delivery destinations</span>
+              </li>
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-danger); font-weight: 700;">✗</span>
+                <span><strong>Vehicle Information:</strong> Registration plate numbers and license documents</span>
+              </li>
+              <li style="display: flex; gap: 0.5rem;">
+                <span style="color: var(--color-danger); font-weight: 700;">✗</span>
+                <span><strong>Raw Weather Feeds:</strong> High-frequency radar streams and weather radar arrays</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Smart Contracts Directory -->
+      <div class="card" style="margin-bottom: 1.75rem;">
+        <div class="card-header">
+          <div class="card-title">
+            <span>📜</span>
+            <span>Solidity Smart Contracts (Sepolia)</span>
+          </div>
+          <span class="badge badge-sim">OPENZEPPELIN ACCESSCONTROL</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Contract</th>
+                <th>Role & Scope</th>
+                <th>Address (Sepolia)</th>
+                <th>Verification</th>
+              </tr>
+            </thead>
+            <tbody id="contract-addresses-tbody">
+              <!-- Populated by blockchain.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Contract Address Config Form (For Custom Sepolia Deployments) -->
+        <details style="margin-top: 1.15rem; border-top: 1px solid var(--color-card-border); padding-top: 0.85rem;">
+          <summary style="font-size: 0.85rem; color: var(--color-accent-cyan); cursor: pointer; font-weight: 600;">
+            ⚙️ Configure Custom Deployed Sepolia Addresses (Optional for Judges / Deployers)
+          </summary>
+          <form id="contract-addresses-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.85rem;">
+            <div>
+              <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">PolicyRegistry.sol Address</label>
+              <input type="text" id="input-addr-policy" class="select-control" style="width: 100%; font-family: var(--font-mono); min-height: 40px;" placeholder="0x...">
+            </div>
+            <div>
+              <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">TriggerRegistry.sol Address</label>
+              <input type="text" id="input-addr-trigger" class="select-control" style="width: 100%; font-family: var(--font-mono); min-height: 40px;" placeholder="0x...">
+            </div>
+            <div>
+              <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">ClaimManager.sol Address</label>
+              <input type="text" id="input-addr-claim" class="select-control" style="width: 100%; font-family: var(--font-mono); min-height: 40px;" placeholder="0x...">
+            </div>
+            <div>
+              <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">PayoutAuthorizer.sol Address</label>
+              <input type="text" id="input-addr-payout" class="select-control" style="width: 100%; font-family: var(--font-mono); min-height: 40px;" placeholder="0x...">
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <button type="submit" class="btn btn-primary btn-sm" style="min-height: 38px;">Save Sepolia Addresses</button>
+            </div>
+          </form>
+        </details>
+      </div>
+
+      <!-- SHA-256 CRYPTOGRAPHIC INTEGRITY & ON-CHAIN VERIFICATION CONSOLE -->
+      <div class="card" style="margin-bottom: 1.75rem; border-color: rgba(56, 189, 248, 0.3);">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🛡️</span>
+            <span>SHA-256 Cryptographic Record Integrity & On-Chain Verifier</span>
+          </div>
+          <span class="badge badge-success">SHA-256 DOCUMENT SECURITY</span>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.15rem; line-height: 1.5;">
+          Audit the exact cryptographic integrity of insurance policies, weather evidence feeds, claim evaluation reports, and payout receipts.
+          The engine serializes records into deterministic canonical JSON (sorted keys, normalized types, unix epoch timestamps), hashes them with SHA-256, and verifies them against immutable on-chain smart contract state.
+        </p>
+
+        <!-- Record Selector for Auditor/Admin -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.15rem; margin-bottom: 1.15rem;">
+          <div>
+            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; font-weight: 500;">
+              Select Policy / Document to Audit:
+            </label>
+            <select id="select-audit-policy" class="select-control" style="width: 100%; min-height: 42px;">
+              <!-- Injected by blockchain.js -->
+            </select>
+          </div>
+          <div style="display: flex; align-items: flex-end;">
+            <button id="btn-recalculate-sha256" class="btn btn-primary" style="width: 100%; min-height: 42px;">
+              ⚡ Recalculate & Verify SHA-256
+            </button>
+          </div>
+        </div>
+
+        <!-- Verification Detail Workspace -->
+        <div id="current-policy-terms-preview" style="background: var(--color-card-hover); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-md); padding: 1.25rem; margin-bottom: 1.15rem;">
+          <!-- Injected dynamically by blockchain.js -->
+        </div>
+
+        <!-- Direct Hash Lookup -->
+        <div style="margin-top: 1.15rem; border-top: 1px solid var(--color-card-border); padding-top: 1rem;">
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem; font-weight: 500;">
+            Direct On-Chain Hash Query (Paste any 32-byte 0x... Policy, Claim or Payout Hash):
+          </label>
+          <div style="display: flex; gap: 0.75rem;">
+            <input type="text" id="input-verify-hash" class="select-control" style="flex: 1; font-family: var(--font-mono); min-height: 42px;" placeholder="Paste 32-byte 0x... SHA-256 or Keccak hash">
+            <button id="btn-verify-hash" class="btn btn-outline" style="min-height: 42px;">Audit On-Chain Hash</button>
+          </div>
+        </div>
+
+        <div id="verify-result-box" style="margin-top: 0.85rem;"></div>
+      </div>
+
+      <!-- FAILURE TESTING & DEFENSE DEMONSTRATION PANEL -->
+      <div class="card" style="margin-bottom: 1.75rem;">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🧪</span>
+            <span>Web3 Failure Testing & Defensive Handling Sandbox</span>
+          </div>
+          <span class="badge badge-warning">JUDGE DEMO SUITE</span>
+        </div>
+
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.15rem; line-height: 1.5;">
+          Test how VarshaRakshak handles adversarial actions, wallet rejections, missing funds, and network mismatches with graceful, informative error states:
+        </p>
+
+        <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+          <button id="btn-fail-wrong-network" class="btn btn-outline btn-sm">Test Wrong Network (Mainnet vs Sepolia)</button>
+          <button id="btn-fail-user-rejected" class="btn btn-outline btn-sm">Test User Rejected Signature (Code 4001)</button>
+          <button id="btn-fail-insufficient-eth" class="btn btn-outline btn-sm">Test Zero Test ETH (-32000 Gas Error)</button>
+          <button id="btn-fail-duplicate-claim" class="btn btn-outline btn-sm">Test Duplicate Claim Smart Contract Revert</button>
+          <button id="btn-fail-missing-contract" class="btn btn-outline btn-sm">Test Unconfigured Contract Address</button>
+        </div>
+
+        <div id="failure-sandbox-output" style="margin-top: 1rem;"></div>
+      </div>
+
+      <!-- Transactions Ledger with Filter Tabs -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>⛓️</span>
+            <span>Recorded Blockchain Transactions & Settlement Events</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary btn-sm tx-filter-btn" data-filter="ALL">All (History)</button>
+            <button class="btn btn-outline btn-sm tx-filter-btn" data-filter="LIVE">Sepolia Live Only</button>
+            <button class="btn btn-outline btn-sm tx-filter-btn" data-filter="SIMULATED">Simulated Only</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Supabase Ref</th>
+                <th>Record Type</th>
+                <th>SHA-256 Digest</th>
+                <th>Contract & Address</th>
+                <th>Tx Hash & Etherscan</th>
+                <th>Network & Block</th>
+                <th>Status</th>
+                <th>Integrity Audit</th>
+              </tr>
+            </thead>
+            <tbody id="blockchain-tx-tbody">
+              <!-- Populated by blockchain.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. All insurance policies, premium collections, coverage amounts, weather anomalies, and payouts are illustrative simulation data.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype • Ethereum Sepolia Web3 Simulation</div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/contracts-config.js"></script>
+  <script src="js/abis.js"></script>
+  <script src="js/policy-hasher.js"></script>
+  <script src="js/web3.js"></script>
+  <script src="js/insurance.js"></script>
+  <script src="js/blockchain.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

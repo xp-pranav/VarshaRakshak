@@ -1,0 +1,19 @@
+[
+  "constructor(address _policyRegistry, address _claimManager)",
+  "event PayoutAuthorized(bytes32 indexed payoutReference, bytes32 indexed claimId, bytes32 indexed policyId, bytes32 receiptHash, bytes32 pseudonymousRider, uint256 amount, uint64 timestamp)",
+  "event DisburserAuthorized(address indexed disburser, bool isAuthorized)",
+  "event ContractPaused(address indexed account)",
+  "event ContractUnpaused(address indexed account)",
+  "function owner() view returns (address)",
+  "function paused() view returns (bool)",
+  "function authorizedDisbursers(address) view returns (bool)",
+  "function setDisburser(address disburser, bool status) external",
+  "function setRegistries(address _policyRegistry, address _claimManager) external",
+  "function pause() external",
+  "function unpause() external",
+  "function authorizePayout(bytes32 payoutReference, bytes32 claimId, bytes32 policyId, bytes32 pseudonymousRider, uint256 amount) external",
+  "function authorizePayoutWithReceipt(bytes32 payoutReference, bytes32 claimId, bytes32 policyId, bytes32 receiptHash, bytes32 pseudonymousRider, uint256 amount) external",
+  "function verifyReceiptHash(bytes32 payoutReference, bytes32 expectedHash) external view returns (bool)",
+  "function getPayout(bytes32 payoutReference) external view returns (bytes32 claimId, bytes32 policyId, bytes32 receiptHash, bytes32 pseudonymousRider, uint256 amount, uint64 authorizedAt, bool executed)",
+  "function totalPayouts() external view returns (uint256)"
+]

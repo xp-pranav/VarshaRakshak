@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Weather & Disruption Radar | VarshaRakshak (वर्षा रक्षक)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+  <style>
+    .radar-canvas-container {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      background: radial-gradient(circle at center, #0a192f 0%, #070b14 100%);
+      border: 1px solid var(--color-card-border);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .radar-sweep {
+      position: absolute;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      box-shadow: inset 0 0 40px rgba(56, 189, 248, 0.05);
+    }
+    .radar-line {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 190px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.8), transparent);
+      transform-origin: 0 0;
+      animation: radar-spin 4s linear infinite;
+    }
+    @keyframes radar-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .radar-blip {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-blip 2s ease-out infinite;
+    }
+    @keyframes pulse-blip {
+      0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+    }
+    .metric-gauge-card {
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: var(--border-radius-lg);
+      padding: 1.25rem;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+    .metric-gauge-card:hover {
+      border-color: var(--color-card-border-hover);
+      box-shadow: var(--shadow-sm);
+    }
+    .threshold-meter {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--border-radius-full);
+      overflow: hidden;
+      margin-top: 0.75rem;
+      position: relative;
+    }
+    .threshold-fill {
+      height: 100%;
+      border-radius: var(--border-radius-full);
+      transition: width 0.5s var(--ease-out);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Universal Navbar -->
+    <header class="app-header">
+      <a href="index.html" class="brand-logo">
+        <div class="logo-shield">VR</div>
+        <div>
+          <div class="logo-text">VarshaRakshak</div>
+          <span class="logo-subtext">वर्षा रक्षक • Weather Radar</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item"><a href="rider.html"><span class="nav-icon">🏠</span> Home</a></li>
+          <li class="nav-item"><a href="policies.html"><span class="nav-icon">🛡️</span> My Policy</a></li>
+          <li class="nav-item"><a href="claims.html"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item"><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Select Active Rider"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Dark/Light Mode">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <!-- Cockpit Header -->
+      <div class="page-header">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <h1 class="page-title">Live Weather & Parametric Disruption Radar</h1>
+            <span class="badge badge-live">Multi-Provider Live Feed</span>
+          </div>
+          <p class="page-description">
+            Sub-kilometer Doppler radar precipitation tracking, flood risk indices, and automatic insurance trigger thresholds across Mumbai Metropolitan Region.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <select id="pincode-radar-select" class="select-control" style="font-weight: 600;">
+            <option value="400053" selected>PIN 400053 • Andheri West</option>
+            <option value="400050">PIN 400050 • Bandra West</option>
+            <option value="400069">PIN 400069 • Andheri East</option>
+            <option value="400070">PIN 400070 • Kurla West</option>
+            <option value="400051">PIN 400051 • Bandra Kurla Complex (BKC)</option>
+            <option value="400028">PIN 400028 • Dadar West</option>
+          </select>
+          <button id="btn-refresh-weather" class="btn btn-outline btn-sm">↻ Refresh</button>
+        </div>
+      </div>
+
+      <!-- Quick Demo Simulation Controls -->
+      <div style="background: rgba(56, 189, 248, 0.05); border: 1px dashed rgba(56, 189, 248, 0.3); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.75rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <strong style="color: var(--color-accent-cyan); font-size: 0.9rem;">⚡ Judge / Hackathon Demo Simulation Bar:</strong>
+          <span style="font-size: 0.85rem; color: var(--text-muted); margin-left: 0.5rem;">Simulate severe climate events to test dynamic trigger evaluation:</span>
+        </div>
+        <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+          <button id="sim-heavy-rain" class="btn btn-primary btn-xs">🌧️ Heavy Rain (68 mm/hr)</button>
+          <button id="sim-extreme-heat" class="btn btn-outline btn-xs" style="color: #f97316; border-color: #f97316;">🔥 Heatwave (43.5°C)</button>
+          <button id="sim-extreme-cold" class="btn btn-outline btn-xs" style="color: #38bdf8; border-color: #38bdf8;">❄️ Coldwave (4.2°C)</button>
+          <button id="sim-reset-normal" class="btn btn-outline btn-xs">☀️ Clear (1.2 mm/hr)</button>
+        </div>
+      </div>
+
+      <!-- Live Telemetry Banner -->
+      <section class="weather-banner" style="margin-bottom: 2rem;">
+        <div class="weather-banner-content">
+          <div class="weather-main-info">
+            <div class="weather-temp-big" id="radar-temp-val">28.5°C</div>
+            <div class="weather-details-col">
+              <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+                <span class="weather-condition-title" id="radar-condition-val">Moderate Monsoon Rain</span>
+                <span id="radar-alert-badge" class="badge badge-warning">Moderate Rain</span>
+                <span id="radar-provider-badge" class="badge badge-sim">📡 Live: OpenWeatherMap</span>
+              </div>
+              <div class="weather-meta-row" style="margin-top: 0.35rem;">
+                <span id="radar-locality-label">Andheri West, Mumbai</span>
+                <span>•</span>
+                <span id="radar-pincode-label">PIN 400053</span>
+                <span>•</span>
+                <span id="radar-sync-time">Updated Just Now</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="weather-stats-grid">
+            <div class="weather-stat-card">
+              <div class="weather-stat-val" id="radar-stat-rain" style="color: var(--color-accent-cyan);">14.0 mm/h</div>
+              <div class="weather-stat-label">Rainfall Rate</div>
+            </div>
+            <div class="weather-stat-card">
+              <div class="weather-stat-val" id="radar-stat-humidity">88%</div>
+              <div class="weather-stat-label">Relative Humidity</div>
+            </div>
+            <div class="weather-stat-card">
+              <div class="weather-stat-val" id="radar-stat-wind">22 km/h</div>
+              <div class="weather-stat-label">Wind Gusts</div>
+            </div>
+            <div class="weather-stat-card">
+              <div class="weather-stat-val" id="radar-stat-trigger" style="color: var(--color-success);">Ready</div>
+              <div class="weather-stat-label">Policy Trigger Status</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Radar Display & Thresholds Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Left: Interactive Radar Visualizer -->
+        <div style="background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-xl); padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div>
+              <h3 style="margin: 0; font-size: 1.15rem;">Hyperlocal Doppler Radar Sweep</h3>
+              <p style="margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--text-muted);">Real-time reflectivity and cloudburst cell detection</p>
+            </div>
+            <span class="badge badge-live">3-Second Doppler Sweep</span>
+          </div>
+
+          <div class="radar-canvas-container">
+            <div class="radar-sweep">
+              <div class="radar-line"></div>
+              <!-- Blips for key Mumbai hubs -->
+              <div class="radar-blip" style="top: 38%; left: 42%; background: #ef4444;" title="Andheri West (Storm Cell)"></div>
+              <div class="radar-blip" style="top: 55%; left: 48%; background: #f59e0b;" title="Bandra West (Moderate Showers)"></div>
+              <div class="radar-blip" style="top: 62%; left: 65%; background: #ef4444;" title="Kurla LBS (Waterlogging Alert)"></div>
+              <div class="radar-blip" style="top: 48%; left: 58%; background: #10b981;" title="BKC Elevated (Safe Corridor)"></div>
+            </div>
+
+            <!-- Overlaid Map HUD labels -->
+            <div style="position: absolute; bottom: 15px; left: 20px; font-size: 0.75rem; color: #94a3b8; background: rgba(7, 11, 20, 0.7); padding: 0.4rem 0.8rem; border-radius: var(--border-radius-sm); border: 1px solid var(--color-card-border);">
+              <div>📍 <strong>Center:</strong> Mumbai Metropolitan Area (19.0760° N, 72.8777° E)</div>
+              <div>⚡ <strong>Detected Cells:</strong> 2 Active Cloudburst Bands</div>
+            </div>
+
+            <div style="position: absolute; top: 15px; right: 20px; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.75rem;">
+              <span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; padding: 2px 8px; border-radius: 4px;">Red: >55 mm/hr</span>
+              <span style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; padding: 2px 8px; border-radius: 4px;">Orange: 25-55 mm/hr</span>
+              <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; padding: 2px 8px; border-radius: 4px;">Green: Safe / Passable</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: 4 Parametric Triggers Gauge Cards -->
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- 1. Heavy Rainfall Trigger -->
+          <div class="metric-gauge-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; font-size: 0.95rem;">🌧️ Heavy Rain Trigger</span>
+              <span id="gauge-rain-val" style="font-weight: 800; color: var(--color-accent-cyan);">14 / 35 mm/h</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Automatic payout triggers at ≥ 35 mm/hr (or ≥ 55 mm/hr for severe)
+            </div>
+            <div class="threshold-meter">
+              <div id="gauge-rain-fill" class="threshold-fill" style="width: 40%; background: linear-gradient(90deg, #0284c7, #38bdf8);"></div>
+            </div>
+          </div>
+
+          <!-- 2. Extreme Heatwave Trigger -->
+          <div class="metric-gauge-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; font-size: 0.95rem;">🔥 Extreme Heatwave</span>
+              <span id="gauge-heat-val" style="font-weight: 800; color: #f59e0b;">28.5 / 42.0°C</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Mandatory rest & compensation when temperature exceeds 42.0°C
+            </div>
+            <div class="threshold-meter">
+              <div id="gauge-heat-fill" class="threshold-fill" style="width: 67%; background: linear-gradient(90deg, #f59e0b, #ef4444);"></div>
+            </div>
+          </div>
+
+          <!-- 3. Severe Coldwave Trigger -->
+          <div class="metric-gauge-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; font-size: 0.95rem;">❄️ Severe Coldwave</span>
+              <span id="gauge-cold-val" style="font-weight: 800; color: #38bdf8;">28.5°C (Safe >5°C)</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Thermal protection compensation triggers when temperature drops ≤ 5.0°C
+            </div>
+            <div class="threshold-meter">
+              <div id="gauge-cold-fill" class="threshold-fill" style="width: 10%; background: #38bdf8;"></div>
+            </div>
+          </div>
+
+          <!-- 4. Waterlogging Depth Sensor -->
+          <div class="metric-gauge-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; font-size: 0.95rem;">🌊 Waterlogging Depth</span>
+              <span id="gauge-flood-val" style="font-weight: 800; color: var(--color-warning);">18 cm (Caution)</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Two-wheeler disruption alert at >15cm; impassable diversion at >30cm
+            </div>
+            <div class="threshold-meter">
+              <div id="gauge-flood-fill" class="threshold-fill" style="width: 36%; background: linear-gradient(90deg, #10b981, #f59e0b);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operational Hub Status & Safe Corridor Advisory -->
+      <div style="background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: var(--border-radius-xl); padding: 1.5rem;">
+        <h3 style="margin: 0 0 1rem; font-size: 1.15rem;">Operational Corridor Advisory (MMR Gig Delivery Hubs)</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div style="background: var(--color-card-hover); border: 1px solid var(--color-card-border); padding: 1rem; border-radius: var(--border-radius-md);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--text-main);">Andheri West & Lokhandwala</strong>
+              <span class="badge badge-warning">Moderate Showers</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Rain: 14 mm/h • Water Depth: 12cm • Subway open via flyover diversion.</div>
+          </div>
+
+          <div style="background: var(--color-card-hover); border: 1px solid var(--color-card-border); padding: 1rem; border-radius: var(--border-radius-md);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--text-main);">Kurla West (LBS Marg)</strong>
+              <span class="badge badge-danger">Severe Waterlogging</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Rain: 48 mm/h • Water Depth: 48cm • Impassable for 2-wheelers. Safe detour active.</div>
+          </div>
+
+          <div style="background: var(--color-card-hover); border: 1px solid var(--color-card-border); padding: 1rem; border-radius: var(--border-radius-md);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="color: var(--text-main);">BKC & Bandra East</strong>
+              <span class="badge badge-success">Clear Corridor</span>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Rain: 4 mm/h • Elevated connectors operational • Normal delivery delivery velocity.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/contracts-config.js"></script>
+  <script src="js/web3.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    async function updateWeatherCockpit(pincode = '400053') {
+      const data = await VRWeather.getCurrentWeather(pincode);
+      
+      document.getElementById('radar-temp-val').textContent = `${data.temperature.toFixed(1)}°C`;
+      document.getElementById('radar-condition-val').textContent = data.condition || 'Moderate Monsoon Rain';
+      
+      const badge = document.getElementById('radar-alert-badge');
+      badge.textContent = data.alertLevel || 'Normal';
+      badge.className = `badge ${data.alertBadgeClass || 'badge-success'}`;
+
+      document.getElementById('radar-locality-label').textContent = data.locality || 'Mumbai Metro';
+      document.getElementById('radar-pincode-label').textContent = `PIN ${pincode}`;
+      document.getElementById('radar-stat-rain').textContent = `${data.rainfallRateMmHr.toFixed(1)} mm/h`;
+      document.getElementById('radar-stat-humidity').textContent = `${data.humidity || 85}%`;
+      document.getElementById('radar-stat-wind').textContent = `${data.windSpeedKmh ? data.windSpeedKmh.toFixed(0) : 20} km/h`;
+
+      // Policy status calculation
+      const triggerBadge = document.getElementById('radar-stat-trigger');
+      if (data.rainfallRateMmHr >= 35 || data.temperature >= 42 || data.temperature <= 5) {
+        triggerBadge.textContent = 'TRIGGER MET ⚡';
+        triggerBadge.style.color = 'var(--color-danger)';
+      } else {
+        triggerBadge.textContent = 'Monitoring ✓';
+        triggerBadge.style.color = 'var(--color-success)';
+      }
+
+      // Gauges
+      document.getElementById('gauge-rain-val').textContent = `${data.rainfallRateMmHr.toFixed(1)} / 35 mm/h`;
+      const rainPct = Math.min(100, (data.rainfallRateMmHr / 60) * 100);
+      document.getElementById('gauge-rain-fill').style.width = `${rainPct}%`;
+
+      document.getElementById('gauge-heat-val').textContent = `${data.temperature.toFixed(1)} / 42.0°C`;
+      const heatPct = Math.min(100, (data.temperature / 50) * 100);
+      document.getElementById('gauge-heat-fill').style.width = `${heatPct}%`;
+
+      document.getElementById('radar-provider-badge').textContent = `📡 Live: ${data.provider || 'OpenWeatherMap'}`;
+    }
+
+    document.getElementById('pincode-radar-select').addEventListener('change', (e) => {
+      updateWeatherCockpit(e.target.value);
+    });
+
+    document.getElementById('btn-refresh-weather').addEventListener('click', () => {
+      const pin = document.getElementById('pincode-radar-select').value;
+      updateWeatherCockpit(pin);
+      showToast('Weather telemetry updated with live radar feed!', 'info');
+    });
+
+    // Simulation Triggers
+    document.getElementById('sim-heavy-rain').addEventListener('click', () => {
+      const pin = document.getElementById('pincode-radar-select').value;
+      VRWeather.simulateWeatherChange(pin, 68.0, 27.2);
+      updateWeatherCockpit(pin);
+      showToast('Simulated severe cloudburst (68.0 mm/hr) in ' + pin + '! Parametric trigger active.', 'warning');
+    });
+
+    document.getElementById('sim-extreme-heat').addEventListener('click', () => {
+      const pin = document.getElementById('pincode-radar-select').value;
+      VRWeather.simulateWeatherChange(pin, 0.0, 43.5);
+      updateWeatherCockpit(pin);
+      showToast('Simulated dangerous heatwave (43.5°C) in ' + pin + '! Payout condition met.', 'error');
+    });
+
+    document.getElementById('sim-extreme-cold').addEventListener('click', () => {
+      const pin = document.getElementById('pincode-radar-select').value;
+      VRWeather.simulateWeatherChange(pin, 0.0, 4.2);
+      updateWeatherCockpit(pin);
+      showToast('Simulated extreme coldwave (4.2°C) in ' + pin + '! Protection alert active.', 'info');
+    });
+
+    document.getElementById('sim-reset-normal').addEventListener('click', () => {
+      const pin = document.getElementById('pincode-radar-select').value;
+      VRWeather.simulateWeatherChange(pin, 1.2, 29.0);
+      updateWeatherCockpit(pin);
+      showToast('Weather reset to clear conditions in ' + pin + '.', 'success');
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      VRSupabase.init();
+      updateWeatherCockpit('400053');
+    });
+  </script>
+</body>
+</html>

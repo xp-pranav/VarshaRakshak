@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Income Tracker — VarshaRakshak</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase JS Client & Auth Guard -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/auth-guard.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Demo Disclaimer Banner -->
+    <div class="demo-banner">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span class="status-dot active"></span>
+        <span><strong>INCOME & DISRUPTION ANALYTICS:</strong> Track daily gig earnings and compare weather-induced disruption losses with parametric insurance protection.</span>
+      </div>
+      <div class="badge badge-demo">FINTECH ANALYTICS</div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="index.html" class="brand-section">
+        <div class="brand-logo">VR</div>
+        <div>
+          <div class="brand-title" data-i18n="brand_name">VarshaRakshak</div>
+          <span class="brand-subtitle" data-i18n="tagline">Smart Insurance for Every Delivery Rider</span>
+        </div>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item"><a href="rider.html"><span class="nav-icon">🏠</span> Home</a></li>
+          <li class="nav-item"><a href="policies.html"><span class="nav-icon">🛡️</span> My Policy</a></li>
+          <li class="nav-item"><a href="claims.html"><span class="nav-icon">📋</span> Claims</a></li>
+          <li class="nav-item"><a href="profile.html"><span class="nav-icon">👤</span> Profile</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="rider-selector" class="select-control" title="Active Rider"></select>
+        <select id="global-lang-selector" class="select-control lang-selector" title="Language Switcher">
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="en">English</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn btn-outline btn-sm" title="Toggle Theme">🌙</button>
+        <div id="global-wallet-pill" class="status-pill"></div>
+        <button type="button" id="btn-global-logout" class="btn btn-outline btn-sm btn-logout" data-action="logout" title="Sign Out">🚪 Logout</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" data-i18n="nav_income">Daily Income Tracker & Disruption Loss</h1>
+          <div class="page-description">
+            Log gig delivery earnings, analyze weekly trends, and benchmark lost working hours against insurance coverage.
+          </div>
+        </div>
+      </div>
+
+      <!-- Income Metrics Stats -->
+      <div class="grid-stats">
+        <div class="card stat-card">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="today_income">Today's Earnings</span>
+            <span class="stat-icon">💰</span>
+          </div>
+          <div class="stat-value" id="income-today-val">₹750</div>
+          <div class="stat-subtext">Rider-Reported Income</div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="avg_daily_income">Daily Average</span>
+            <span class="stat-icon">📊</span>
+          </div>
+          <div class="stat-value" id="income-avg-val">₹950</div>
+          <div class="stat-subtext positive">7-Day Rolling Average</div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-header">
+            <span class="stat-label" data-i18n="disruption_loss">Estimated Disruption Loss</span>
+            <span class="stat-icon">🌧️</span>
+          </div>
+          <div class="stat-value" style="color: var(--color-danger);" id="income-disruption-val">₹535</div>
+          <div class="stat-subtext">System-Calculated Loss</div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Insurance Protection Ratio</span>
+            <span class="stat-icon">🛡️</span>
+          </div>
+          <div class="stat-value" style="color: var(--color-success);">100%</div>
+          <div class="stat-subtext positive">Covered up to ₹1,000/day</div>
+        </div>
+      </div>
+
+      <!-- Chart & Form Grid -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem;">
+        <!-- Income Trend Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>📈</span>
+              <span>7-Day Earnings vs Disruption Loss Trends</span>
+            </div>
+            <span class="badge badge-sim">CHART.JS ANALYTICS</span>
+          </div>
+
+          <div style="height: 320px; position: relative;">
+            <canvas id="income-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Log Income Form -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>✍️</span>
+              <span>Log Daily Earnings</span>
+            </div>
+            <span class="badge badge-demo">RIDER INPUT</span>
+          </div>
+
+          <form id="income-log-form" style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <div>
+              <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem; font-weight: 500;">Date</label>
+              <input type="date" id="income-date" class="select-control" style="width: 100%; min-height: 40px;" required>
+            </div>
+
+            <div>
+              <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem; font-weight: 500;">Gross Earnings (₹)</label>
+              <input type="number" id="income-amount" class="select-control" style="width: 100%; min-height: 40px;" placeholder="e.g. 1050" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem; font-weight: 500;">Trips Completed</label>
+                <input type="number" id="income-trips" class="select-control" style="width: 100%; min-height: 40px;" placeholder="14" required>
+              </div>
+              <div>
+                <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem; font-weight: 500;">Online Hours</label>
+                <input type="number" id="income-hours" class="select-control" style="width: 100%; min-height: 40px;" placeholder="7.5" step="0.5" required>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem; font-weight: 500;">Platform</label>
+              <select id="income-platform" class="select-control" style="width: 100%; min-height: 40px;">
+                <option value="Zomato">Zomato</option>
+                <option value="Swiggy">Swiggy</option>
+                <option value="Blinkit">Blinkit</option>
+                <option value="Zepto">Zepto</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 0.5rem; min-height: 42px;">Save Earnings Entry</button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-disclaimer">
+        <strong>VarshaRakshak Prototype Notice:</strong> Developed for technology demonstration and product architecture validation. All insurance policies, premium collections, coverage amounts, weather anomalies, and payouts are illustrative simulation data.
+      </div>
+      <div>&copy; 2026 VarshaRakshak • Bajaj Technology Prototype • Ethereum Sepolia Web3 Simulation</div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/localization.js"></script>
+  <script src="js/income.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set default date to today
+      const dateEl = document.getElementById('income-date');
+      if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+
+      VRIncome.init('income-chart');
+    });
+  </script>
+</body>
+</html>

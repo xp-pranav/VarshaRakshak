@@ -1,0 +1,19 @@
+[
+  "constructor()",
+  "event WeatherTriggerRecorded(bytes32 indexed eventHash, bytes32 indexed evidenceHash, uint8 indexed eventType, string pincode, uint32 intensityValue, uint16 durationMinutes, uint64 timestamp, bool isDemoSimulation, address oracle)",
+  "event OracleAuthorized(address indexed oracle, bool isAuthorized)",
+  "event ContractPaused(address indexed account)",
+  "event ContractUnpaused(address indexed account)",
+  "function owner() view returns (address)",
+  "function paused() view returns (bool)",
+  "function authorizedOracles(address) view returns (bool)",
+  "function setAuthorizedOracle(address oracle, bool status) external",
+  "function pause() external",
+  "function unpause() external",
+  "function recordTrigger(bytes32 eventHash, uint8 eventType, string calldata pincode, uint32 intensityValue, uint16 durationMinutes, bool isDemoSimulation) external",
+  "function recordTriggerWithEvidence(bytes32 eventHash, bytes32 evidenceHash, uint8 eventType, string calldata pincode, uint32 intensityValue, uint16 durationMinutes, bool isDemoSimulation) external",
+  "function verifyTrigger(bytes32 eventHash) external view returns (bool exists, uint8 eventType, string memory pincode, uint32 intensityValue, uint16 durationMinutes, bool isDemoSimulation)",
+  "function verifyEvidenceHash(bytes32 eventHash, bytes32 expectedEvidenceHash) external view returns (bool)",
+  "function getTrigger(bytes32 eventHash) external view returns (bytes32, bytes32, uint8, string memory, uint32, uint16, uint64, bool, bool, address)",
+  "function totalTriggers() external view returns (uint256)"
+]

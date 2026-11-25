@@ -438,3 +438,8 @@ TEST SUMMARY: 31 PASSED, 0 FAILED
 - **Live Sepolia vs Simulation Mode:** Live on-chain execution requires a MetaMask user wallet funded with Sepolia test ETH. When contracts are not yet deployed or gas is unavailable, the application operates in **Simulation Mode**, providing full deterministic cryptographic hashing and automated claim lifecycle demonstrations with zero false claims or broken states.
 - **Regulatory Nature:** As stated throughout the product, this is an illustrative technology prototype built to showcase parametric and Web3 capabilities for delivery partners. Real-world commercial underwriting requires licensed insurance entities and IRDAI sandbox regulatory approvals.
 # versa
+
+
+
+#Comtributor
+1. Paritosh Singh
